@@ -1,176 +1,72 @@
-# PROJECT_STATE — Hoyeon Choi Portfolio
+# PROJECT_STATE — DODREI
 
-Last updated: 2026-08-25
-Repository: `perfumeJaguar/perfumeJaguar.github.io`
-Live site: `https://perfumeJaguar.github.io/`
-Branch: `main`
+Last updated: 2026-08-28
 
-## Purpose
+## Current phase
 
-Personal portfolio website for Hoyeon Choi, built as a static GitHub Pages site. The site is intended for media art, moving image, sound/performance, photography, and related portfolio material.
+DODREI 전용 WORK 프로젝트와 repository 체계를 정립하는 단계다.
 
-The current phase is visual/prototyping work rather than final content production. GitHub is the source of truth for the implementation.
+현재 repository의 실제 활성 구현은 브라우저 기반 p5.js 작업이며, 이전 포트폴리오/Pages 자료는 DODREI와 분리해 archive로 보존한다. 이 초기 정리는 기존 작품 코드를 재설계하기 위한 작업이 아니라, 앞으로 현재 상태를 빠르게 복구하고 안전하게 이어가기 위한 진입 구조를 만드는 작업이다.
 
-## Design direction
+## Active
 
-- Strongly minimal, editorial, artist-portfolio aesthetic.
-- Cargo sites are the main visual reference, especially the supplied `8886588.cargo.site` reference and `352785-a.cargo.site` gallery reference.
-- Mobile-first vertical scrolling is important.
-- Large typography, sparse information hierarchy, long vertical rhythm, restrained rules/borders, and simple media presentation.
-- Industrial / neutral typography is preferred over decorative styling.
-- Korean typography matters significantly; default Korean system fonts are not considered suitable for the desired design.
-- Layout should remain plain enough that images, video, text, and project documentation carry the visual weight.
+### Browser / p5.js
 
-## Current baseline files
+경로: `experiments/p5-media-lab/`
 
-### `index.html` + `style.css`
-Main Cargo-inspired portfolio prototype.
+현재 상세 상태는 해당 경로의 `PROJECT_STATE.md`가 canonical이다.
 
-Current structure:
-- Sticky/simple top navigation: Hoyeon Choi / Information.
-- Oversized multi-line hero title.
-- Numbered project sections.
-- Large main-media placeholders.
-- Three-column thumbnail rows.
-- Project statement blocks.
-- Information section with Profile / Skills / Exhibitions / Awards / Press-style rows.
+현재 확인된 checkpoint:
 
-This is still a structural placeholder rather than final portfolio content.
+- artwork/runtime: `1.0.28`
+- visual engine: `1.0.28`
+- config schema: `1`
+- PHOTO ONLY
+- automatic mode advance OFF
+- 96-image archive / 20-image resident pool
+- 1-second memory recall
 
-### `gallery.html` + `gallery.css`
-Alternative gallery/archive prototype inspired by the second Cargo reference.
+세부 구현, 활성 모듈, 파라미터와 미해결 문제는 하위 상태 문서와 실제 코드에서 확인한다.
 
-Current structure:
-- Continuous vertical archive.
-- Project index + title + metadata.
-- Large media blocks followed by small captions.
-- Mixed wide / portrait / square media rhythm.
-- Intended as a useful visual grammar for future image/video-heavy pages.
+## Known project tracks not yet normalized in this repository
 
-### `Font_test.html`
-Typeface specimen/archive for comparing Korean-friendly free web fonts in an actual portfolio-like layout.
+다음 영역은 DODREI의 실제 작업 범위에 포함될 수 있으나, 이번 초기화 시점에는 repository 안의 canonical 구조가 아직 확인·정립되지 않았다.
 
-Currently compares 13 typefaces:
-1. IBM Plex Sans KR
-2. Wanted Sans
-3. Pretendard
-4. SUIT
-5. Gothic A1
-6. LINE Seed Sans KR
-7. NanumSquare Neo
-8. Gmarket Sans
-9. MaruBuri
-10. Black Han Sans
-11. Do Hyeon
-12. Jua
-13. Gowun Batang
+- TouchDesigner 기존 작품과 리팩터링 자료
+- Max/MSP 및 audio 연동 계획
+- local AI / 생성 이미지 / 외부 서비스 연동 자료
+- 상위 작품 architecture와 stage/state/content/event 구조 관련 handoff
+- 대용량 원본 이미지·영상·오디오 asset
 
-Tests include:
-- Very large Regular / Bold / Italic headings.
-- Korean sentence followed by equivalent English sentence.
-- Multi-line large typography specifically to inspect tight leading and glyph collisions.
-- Medium and subheading sizes.
-- Body Regular / Bold / Italic.
-- 12px / 11px / 10px two-line small-text tests.
-- 9px extreme-small reference.
-- Numerals, dates, technical metadata, and symbols.
-- Large Korean leading currently intentionally tight (`.82`) for stress testing.
-- Some Korean fonts have no true italic face, so browser synthetic italic may appear; this is a test characteristic, not a final design decision.
+이 항목들을 위해 빈 폴더나 문서 세트를 미리 만들지 않는다. 실제 자료를 가져오거나 작업을 시작할 때 현재 상태를 확인한 뒤 필요한 최소 구조를 결정한다.
 
-### `Font_test-1.html`, `Font_test-2.html`, `Font_test-3.html`
-Theme entry pages that redirect to the same `Font_test.html` specimen with query parameters, so typography/content stays synchronized rather than being duplicated.
+## Repository initialization decisions
 
-- `Font_test-1.html` → white theme (`?theme=white`)
-- `Font_test-2.html` → neutral gray theme (`?theme=gray`)
-- `Font_test-3.html` → warm paper theme (`?theme=warm`)
+- 루트 `README.md`를 저장소의 고정 진입점으로 사용한다.
+- 루트 `PROJECT_STATE.md`에는 DODREI 전체 수준의 현재 활성 작업과 큰 상태만 기록한다.
+- 프로젝트 특수 AI 작업 규칙은 `WORKING_GUIDE.md`에 둔다.
+- 현재 살아 있는 p5.js 작업은 경로 이동으로 인한 배포·참조 위험을 피하기 위해 `experiments/p5-media-lab/`에 그대로 둔다.
+- 이전 포트폴리오 루트 파일과 `portfolio-v2/`는 삭제하지 않고 `archive/legacy-portfolio/`로 보존한다.
+- GitHub Pages 루트 진입점은 활성 p5.js DODREI 작업으로 연결한다.
+- 구조를 보기 좋게 만들기 위한 목적만으로 추가 이동·세분화하지 않는다.
 
-The warm paper palette is an experimental recommendation, not a final background choice. Final background should be judged with real portfolio imagery because image color/grain can change the result substantially.
+## Documentation status
 
-### `Embed_test_1.html`
-First real-media embedding/layout experiment, derived from the gallery/archive direction.
+현재 p5.js 하위 문서 중 `PROJECT_STATE.md`와 `README.md`는 v1.0.28 상태를 반영한다.
 
-Current characteristics:
-- Mobile-first vertical editorial layout.
-- Wanted Sans chosen provisionally for the test.
-- Warm off-white background.
-- Still-image presentation mixed with YouTube embeds and captions.
-- Supplied YouTube video: `POEwTjr0eWY`.
-- YouTube embeds intentionally minimize visible player chrome using embed parameters such as `controls=0`, `rel=0`, `playsinline=1`, `fs=0`, with a small original-video link below.
-- The same video may be repeated in the prototype to test rhythm/scale.
-- One supplied photograph is currently embedded directly in the HTML as Base64 for the prototype.
+`ARCHITECTURE.md`는 확인 시점에 v1.0.24 / visual engine v1.0.22 기준 헤더와 일부 이전 설명을 포함하고 있어 현재 구현의 완전한 상태 문서로 간주하지 않는다. architecture를 실제로 다시 다루는 작업에서 코드와 최신 state를 기준으로 갱신한다.
 
-Important limitation: embedding image data directly in HTML is acceptable only for this quick experiment. Final portfolio media should be stored as separate optimized image assets (preferably an organized assets/images structure, using JPEG/WebP as appropriate) rather than Base64 inside HTML.
+## Archive
 
-## Independent hosted experiments
+`archive/legacy-portfolio/`는 이 repository가 DODREI 전용으로 정리되기 전의 개인 포트폴리오 및 GitHub Pages 실험 자료다.
 
-### `experiments/p5-media-lab/`
-`p5 Media Lab 01` is an **independent media-art project**, not part of the portfolio design/runtime. It is currently hosted inside this repository only because GitHub Pages provides a convenient public deployment path.
+- 현재 DODREI 작업에는 비활성이다.
+- 삭제하지 않고 역사적 참고용으로 보존한다.
+- archive 내부의 과거 `README.md`와 `PROJECT_STATE.md`는 당시 포트폴리오 상태를 설명하는 문서이며 현재 DODREI의 canonical 문서가 아니다.
 
-Do not reconstruct or manage its detailed implementation from this portfolio state file. Its authoritative state is:
+## Next
 
-`experiments/p5-media-lab/PROJECT_STATE.md`
-
-That local state document records its p5.js/p5.sound architecture, current media manifest, mobile/fullscreen constraints, telemetry concept, debugging history, and possible future migration to the separate `perfumeJaguar/mediaArt` repository.
-
-The experiment may remain here temporarily, but its visual language, dependencies, fullscreen behavior, interaction rules, and performance decisions must not be assumed to apply to the portfolio site itself.
-
-## Media supplied during prior checkpoint
-
-The user supplied three photographs for the embed/gallery experiment: portraits/documentation photographs at night around utility/electrical cabinets, with a recorder used as a visual/performance element. Three images were provided, but the current `Embed_test_1.html` prototype only directly incorporates one image. The remaining images should be considered available design references from that session, but are not yet persistent repository assets.
-
-The supplied YouTube test URL was `https://youtu.be/POEwTjr0eWY`.
-
-## Typography direction / conclusions so far
-
-The purpose of the font work is not simply to find a fashionable Korean font. The desired font needs to work directly as web text, especially for a minimal/industrial artist portfolio, and preferably be freely distributable/useable as a webfont.
-
-The specimen intentionally includes both familiar long-running Korean web/design choices and newer alternatives. No single final font has been selected yet. Wanted Sans is currently used in `Embed_test_1.html` only as a provisional design choice.
-
-Typeface evaluation should prioritize:
-- Large headline character.
-- Korean/Latin compatibility.
-- Tight multi-line leading.
-- Small metadata/caption legibility.
-- Numerals and punctuation.
-- Weight behavior.
-- Whether synthetic italic looks acceptable when a native italic is unavailable.
-
-## Architecture / implementation principles
-
-- Static HTML/CSS/JS hosted with GitHub Pages.
-- Keep the implementation simple; no framework is currently needed.
-- Mobile-first behavior is a primary requirement, not an afterthought.
-- Test pages may remain separate while visual decisions are being made.
-- Avoid prematurely consolidating experimental layouts into the production index.
-- Reuse shared content/logic where sensible. The font theme pages already demonstrate this by redirecting to one canonical specimen rather than duplicating a large HTML document.
-- For final media, use repository assets rather than Base64 HTML payloads.
-- Independent browser artworks may be hosted under `experiments/`, but each should keep its own project-state documentation if it develops beyond a simple portfolio-layout test.
-
-## Reference sites
-
-- Cargo reference 1: `https://8886588.cargo.site/`
-  - Main reference for oversized typography, project numbering, long vertical composition, sparse metadata, and two-column information/CV sections.
-- Cargo reference 2: `https://352785-a.cargo.site/`
-  - Reference for the alternative gallery/archive-style continuous vertical media layout.
-
-These are references for visual grammar and layout, not targets for literal copying.
-
-## Current open decisions
-
-- Final primary typeface has not been chosen.
-- Final background palette has not been chosen: black/dark, white, neutral gray, and warm paper are still being compared.
-- Need to test the three supplied photographs as proper external assets rather than embedding one as Base64.
-- Need to decide whether the final site primarily follows the numbered editorial `index.html` structure, the continuous `gallery.html` structure, or a hybrid.
-- Need to replace placeholder project/CV content with actual portfolio material.
-- Need to decide final media optimization strategy and asset directory conventions before importing many images/videos.
-- YouTube's embed UI cannot be made completely custom/blank using ordinary embed parameters; the current prototype only minimizes available chrome. A different presentation strategy may be needed if stricter visual control becomes important.
-
-## Next useful step
-
-Continue visual evaluation using `Embed_test_1.html` and the font/background specimens. Once typography, background, and basic media rhythm are chosen, establish an `assets/` structure and convert the strongest prototype into the actual portfolio baseline before importing substantial project content.
-
-Work on `p5 Media Lab 01` should continue from its own `experiments/p5-media-lab/PROJECT_STATE.md`, not from this portfolio roadmap.
-
-## Continuity rule
-
-For future portfolio sessions, read this file before reconstructing the project from conversation memory. Verify actual implementation details against the repository files. At meaningful checkpoints, update this document with confirmed decisions, current baseline files, experiments, limitations, unresolved items, and the next step.
+1. 이 WORK 프로젝트의 Project Instructions를 확정한다.
+2. 다음 실제 작업이 시작될 때 필요한 DODREI 자료만 repository에 가져와 분류한다.
+3. p5.js 외 영역은 실제 파일과 상태를 확인하기 전까지 구조를 만들지 않는다.
+4. 몇 차례 실제 작업을 거친 뒤 반복적으로 유효한 규칙만 `hoyeon`의 공통 working guide 후보로 승격한다.
