@@ -1,4 +1,7 @@
-/** P5 MEDIA LAB 01 — APPLICATION ORCHESTRATOR v0.6.6 */
+/** DODREI — APPLICATION ORCHESTRATOR v0.6.6
+ * Internal P5Lab* identifiers are retained for compatibility with the inherited
+ * browser implementation; they do not indicate a separate LAB project.
+ */
 let telemetry,mediaManager,analyzer,audioEngine,interaction,visualEngine;
 let appStarted=false,appStartedMs=0,resizeTimer=null,runtimeFailed=false,lastViewportW=0,lastViewportH=0;
 window.DODREI_RUNTIME_PAUSED=false;
@@ -83,4 +86,4 @@ function rebuildForViewport(){if(!analyzer||!visualEngine||!telemetry)return;con
 function retryAudio(){if(audioEngine&&appStarted)audioEngine.retryFromGesture();}
 function mouseMoved(){if(interaction)interaction.move(mouseX,mouseY);}function mouseDragged(){if(interaction)interaction.move(mouseX,mouseY);return false;}function mousePressed(){retryAudio();if(interaction&&appStarted)interaction.press(mouseX,mouseY);return false;}function mouseReleased(){if(interaction)interaction.release();return false;}
 function touchStarted(event){retryAudio();if(interaction&&appStarted&&touches.length>0)interaction.press(touches[0].x,touches[0].y);if(event)event.preventDefault();return false;}function touchMoved(event){if(interaction&&touches.length>0)interaction.move(touches[0].x,touches[0].y);if(event)event.preventDefault();return false;}function touchEnded(event){if(interaction)interaction.release();if(event)event.preventDefault();return false;}
-function showFatal(error){console.error(error);const el=document.getElementById('fatal-message');if(!el)return;el.hidden=false;el.textContent=`P5 MEDIA LAB / FATAL ERROR\n\n${error&&error.stack?error.stack:error}`;}
+function showFatal(error){console.error(error);const el=document.getElementById('fatal-message');if(!el)return;el.hidden=false;el.textContent=`DODREI / FATAL ERROR\n\n${error&&error.stack?error.stack:error}`;}
