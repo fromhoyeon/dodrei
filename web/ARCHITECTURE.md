@@ -5,9 +5,11 @@ Current visual engine: **v1.0.28**
 Current config schema: **1**  
 Architecture reviewed: **2026-08-28**
 
-이 문서는 현재 `web/` 구현의 **구조와 책임 경계**를 설명한다. 작품의 현재 checkpoint와 미해결 문제는 `PROJECT_STATE.md`, 실제 parameter 값은 `config.js`, 현재 로드되는 module chain은 `index.html`이 우선한다.
+이 문서는 `web/` 구현의 **구조, 책임 경계, 안전하게 수정하기 위해 알아야 할 안정적인 운영 규칙**을 설명한다.
 
-아직 채택되지 않은 stage/state/content system이나 TouchDesigner/Max/local-AI 통합 구조를 미래 가능성만으로 이 문서에 미리 설계하지 않는다.
+현재 checkpoint와 미해결 문제는 `PROJECT_STATE.md`, 실제 parameter 값은 `config.js`, 현재 로드되는 module chain/cache key는 `index.html`이 우선한다.
+
+별도 config/asset guide는 현재 필요하지 않다. 구조적으로 중요한 내용은 이 문서에 통합하고, 자주 바뀌는 값은 실제 코드/config에 맡긴다.
 
 ## 1. Design objective
 
@@ -15,15 +17,14 @@ DODREI web은 mobile-first browser media artwork다.
 
 현재 architecture가 우선하는 것은 다음이다.
 
-- 작품의 현재 동작을 명확하게 유지할 것;
-- mobile 비용을 bounded하게 유지할 것;
-- media selection, interaction, analysis/audio, rendering/content state를 필요 이상으로 결합하지 않을 것;
-- 실제로 재사용되는 subsystem은 분리하되 generic framework를 만드는 것을 목표로 하지 않을 것;
-- 미래 기능을 위해 placeholder architecture를 미리 만들지 않을 것.
+- 현재 작품 동작을 명확하게 유지한다.
+- mobile 비용을 bounded하게 유지한다.
+- media selection, interaction, analysis/audio, rendering/content state를 필요 이상으로 결합하지 않는다.
+- 실제로 독립된 책임이 있는 subsystem만 분리한다.
+- generic framework를 만드는 것을 목표로 하지 않는다.
+- 미래 가능성만을 위해 placeholder architecture나 schema를 미리 만들지 않는다.
 
-과거 p5 Media Lab에서 발전해 온 구현이므로 내부에 `P5LAB_*`, `P5Lab*` identifier와 additive versioned modules가 남아 있다. 이는 compatibility lineage이며 현재 프로젝트의 역할을 LAB으로 정의하지 않는다.
-
-## 2. Current runtime graph
+## 2. Runtime graph
 
 ```text
 GitHub Contents API
@@ -31,27 +32,20 @@ GitHub Contents API
         ▼
    MediaManager ───── resident/archive images ───────────────┐
         │                                                    │
-        │ current source                                     │ image pool
         ▼                                                    │
     Analyzer                                                 │
         │                                                    │
-        ├─ luminance / RGB / motion-like analysis            │
         ▼                                                    │
    AudioEngine                                               │
         │                                                    │
         └──────────────┐                                     │
-                       │                                     │
-Pointer / Touch ─> Interaction                               │
-      │                │                                     │
-      │                └──────────────────────┐              │
-      │                                       ▼              ▼
-      └─> Memory Recall state ─────────────> VisualEngine <───┘
-                                              │
-                                              ▼
-                                            Canvas
-                                              │
-                                              ├─ telemetry
-                                              └─ artwork presentation
+                       │                                     ▼
+Pointer / Touch ─> Interaction ───────────────────────> VisualEngine
+      │                                                   ▲
+      └──────────────> Memory Recall state ────────────────┘
+                                                          │
+                                                          ▼
+                                                        Canvas
 
 DOM
 ├─ runtime controls
@@ -59,26 +53,20 @@ DOM
 └─ memory aria-live mirror only
 ```
 
-The active artwork is PHOTO ONLY. Legacy video-oriented names remain in some modules, but current behavior is driven by still-image pools, audio, interaction, Canvas2D visual processing, telemetry, and memory recall.
+Ordinary frame orchestration is owned by `sketch-v066.js`.
 
-## 3. Application frame sequence
+```text
+interaction update
+-> media update
+-> analysis
+-> audio update
+-> visual render
+-> telemetry
+```
 
-`sketch-v066.js` currently orchestrates the ordinary frame:
+Memory recall does not create a second application loop. The memory module owns hold/capture state; the active visual engine renders the alternate recall path in the same Canvas system.
 
-1. `Interaction.update()`
-2. `MediaManager.update()`
-3. obtain current source / interaction snapshot
-4. `Analyzer.update(source, interaction)`
-5. `AudioEngine.update(analysis, interaction)`
-6. calculate startup visual/telemetry state
-7. `VisualEngine.render(...)`
-8. render telemetry when its startup stage is active
-
-Telemetry is drawn after the processed artwork so it remains independently legible.
-
-Memory recall does not create a second application loop. The separate memory module captures pointer/hold state and a resident image reference; the active visual engine reads that state and renders the recall path inside its normal Canvas pipeline.
-
-## 4. Configuration architecture
+## 3. Configuration / Control
 
 ```text
 config.js
@@ -88,18 +76,14 @@ config.js
       │
       ▼
 config-schema.js
-  metadata / validation / collection identity
+  validation / editor metadata / collection identity
       │
       ▼
 control/
   import / merge / edit / export
 ```
 
-### `config.js`
-
-Canonical public runtime data.
-
-Important separation:
+### Sources of truth
 
 ```text
 app.version          artwork/runtime release
@@ -107,23 +91,45 @@ meta.schemaVersion   incompatible config-contract version
 meta.configRevision  lightweight config/tuning revision
 ```
 
-Small tuning changes may increment config revision without changing the artwork/runtime version.
+A small tuning change may increment `configRevision` without changing the artwork/runtime version.
 
-`window.P5LAB_CONFIG` remains a compatibility alias for older engine modules.
+`config.js` is data, not executable behavior. Functions/callbacks do not belong in the config object; modules implement behavior and config selects supported behavior/parameters.
 
-### `config-schema.js`
+### Stable IDs
 
-Editor metadata rather than runtime defaults. It describes value types, bounds, select options, collection identity and migration aliases.
+Preset, pipeline stage and image-set collections use stable IDs. Visible labels or array positions may change without changing identity.
 
-### `control/`
+Adding an unknown preset/stage ID to config does not create rendering implementation.
 
-Static editor with no GitHub write credentials. It can load compatible config data, merge known fields/IDs and export a canonical `config.js`.
+### Import / migration
 
-See `CONFIG_GUIDE.md` for config semantics. Current numeric values should be read from `config.js`, not duplicated here.
+Control uses compatible merge semantics:
 
-## 5. Repository and asset discovery boundary
+- known valid value -> import;
+- missing current field -> retain current value;
+- unknown/obsolete field -> ignore;
+- invalid value -> ignore;
+- collections that explicitly allow new IDs may accept them.
 
-The active browser implementation lives at:
+Renamed fields should use explicit migration aliases in `config-schema.js` rather than maintaining duplicate names indefinitely.
+
+A schema-version mismatch may warn while still allowing compatible known paths to merge.
+
+### Deployment
+
+When config/modules/assets change:
+
+1. update the relevant source;
+2. change `app.version` only when the artwork/runtime release meaningfully changes;
+3. increment `configRevision` when useful;
+4. refresh the `index.html` cache key when deployed resources changed;
+5. verify live runtime/telemetry when deployment behavior matters.
+
+The public Control page has no repository write credentials. Browser `localStorage` drafts are convenience only, not canonical backup.
+
+## 4. Repository / asset boundary
+
+The active implementation lives at:
 
 ```text
 repository  fromhoyeon/dodrei
@@ -132,145 +138,123 @@ path        web/
 
 The root Pages entry redirects to `./web/`.
 
-`MediaManager` can discover image filenames through GitHub's public Contents API. The configured repository/path therefore forms a real runtime dependency:
+Image auto-discovery uses GitHub's public Contents API. Therefore repository/path fields in `config.js` are **runtime dependencies**, not descriptive metadata.
 
 ```text
 GitHub Contents API
-  -> configured repository / image directory
-  -> filename metadata
-  -> browser-relative ./assets/images/... paths
-  -> decoded resident working set
+-> configured repository/image directory
+-> filename metadata
+-> browser-relative ./assets/images/... paths
+-> decoded resident working set
 ```
 
-During repository promotion, the code and assets moved to `fromhoyeon/dodrei/web/` while the discovery config still referenced the old `perfumeJaguar/perfumeJaguar.github.io/experiments/p5-media-lab/` location. This was corrected on 2026-08-28.
+If the project or asset tree moves, update the discovery dependency together with the files.
 
-If the project moves again, repository/path fields must be migrated together with the files. They are not merely descriptive metadata.
+Optimized assets required directly by the artwork may live in this repository. Large original footage/photo archives, intermediate renders and bulk generated media should normally remain in local/external storage unless reproduction or runtime requires them.
 
-## 6. MediaManager
+Filename order is not playback order; avoid mass renaming assets without a functional reason because it creates cache/Git noise.
 
-Responsibilities:
+## 5. MediaManager and selection layers
 
-- discover image archive entries as lightweight path metadata;
-- attach stable `setId` metadata;
-- keep a bounded decoded working set;
-- stage replacements in the background;
-- evict old decoded references;
-- expose current source / image pool;
-- isolate resident-pool candidate selection from visual scene selection.
+`js/media-manager.js` owns:
 
-Current policy is summarized in `PROJECT_STATE.md`; exact numeric limits live in `config.js`.
+- archive discovery as lightweight metadata;
+- image-set identity;
+- bounded decoded residency;
+- background staging/replacement;
+- eviction of old decoded references;
+- current source/image-pool exposure.
 
-### Two different randomness layers
-
-Resident-pool rotation uses a shuffle bag to circulate archive content efficiently.
-
-Visible scene selection is independent from that resident candidate bag. The current visible-scene policy allows replacement, duplicates and immediate repeats as valid artistic behavior.
-
-Do not merge these two concepts just because both involve random selection.
-
-## 7. Image sets
-
-Image sets use stable IDs plus subdirectories relative to the configured image root.
-
-```js
-imageSets: [
-  { id: "default", subdir: "" }
-]
-```
-
-The ID is configuration identity; the subdirectory is storage location.
-
-Future weighting, quotas, strict alternation or cross-set pairing should be added to the media-selection boundary only if the artwork actually requires them. They do not belong in visual FX code and should not be prebuilt in advance.
-
-## 8. Visual mode system
-
-The current artwork has a supported preset playlist including:
+Two randomness layers are intentionally separate.
 
 ```text
-PHOTO_DOUBLE_BLEND
-PHOTO_FEEDBACK_CROP
-PHOTO_RAPID_CROP
-PHOTO_SHARD_SWAP
-PHOTO_BLEND_CYCLE
-PHOTO_FULL
+archive -> resident pool
+candidate circulation: shuffle-bag style
+
+resident pool -> visible scene
+selection: independent random with replacement
 ```
 
-`PHOTO_DOUBLE_BLEND` is the current default. Automatic advance is OFF and manual next-mode control remains available.
+Visible immediate repeats and duplicate source usage can therefore be artistically valid even while resident-pool rotation tries to circulate the archive efficiently.
 
-The actual order/enabled state is config-owned. Preset IDs are stable configuration identities; adding an unknown ID to config does not create new rendering behavior.
+Image sets use stable `id` + storage `subdir`. Future weighting, quotas or alternation belong at this media-selection boundary only when the artwork requires them.
 
-## 9. Visual engine inheritance chain
+## 6. Visual modes / pipeline
 
-The browser implementation grew through additive versioned subclasses. The active tail currently reaches `visual-engine-v1028.js`.
+The runtime supports a preset playlist whose exact order/enabled state is config-owned. Current mode state is summarized in `PROJECT_STATE.md`.
 
-Relevant retained layers include:
+Conceptual pipeline stages include:
 
 ```text
-visual-engine-v1000.js   swipe feedback / ordinary touch POST bypass base
-        ↓
-visual-engine-v1003.js   open random scene-slot selection / crop behavior
-        ↓
-visual-engine-v1004.js
-        ↓
-visual-engine-v1007.js   mobile main-composition scaling
-        ↓
-visual-engine-v1012.js   ordered global POST feedback base
-        ↓
-visual-engine-v1015.js   performance-diet layer
-        ↓
-visual-engine-v1020.js   irregular touch rupture / release behavior
-        ↓
-visual-engine-v1021.js   sparse GL
-        ↓
-visual-engine-v1022.js   ST dimming + resize resource disposal
-        ↓
-visual-engine-v1026.js   memory PRE-source composition lock
-        ↓
-visual-engine-v1027.js   memory canvas composite + POST + touch burst/lull
-        ↓
-visual-engine-v1028.js   text-only recall / full-frame readability field / fade
+preset composition
+-> common/touch processing
+-> preset/swipe feedback
+-> memory composition when active
+-> global POST when applicable
+-> vignette / waveform
 ```
 
-`index.html` loads both inherited base modules and the active tail. Older files are therefore not automatically dead code. Before deleting or consolidating versioned modules, verify the active script chain and inheritance graph.
+Important current exception:
 
-A future refactor may flatten this history if the cost of maintaining the inheritance chain becomes real. Do not do so merely to make filenames cleaner.
+- ordinary touch rupture may bypass global POST;
+- recall explicitly composites the fixed memory image + readability field + typography and then applies the current POST chain to that combined result.
 
-## 10. Ordinary visual pipeline and POST
+Deep adaptive crops are intentional. Cover-fit is computed first, then zoom/pan uses available overflow and legal clamping.
 
-The retained stage representation includes concepts such as:
+## 7. Versioned visual-engine lineage
+
+The current browser implementation grew through additive versioned subclasses. `index.html` loads a long ordered chain, and the active tail currently reaches `visual-engine-v1028.js`.
+
+Important retained layers include:
 
 ```text
-preset-composition
-common-crush
-touch-rupture
-preset-feedback
-swipe-feedback
-vignette
-waveform
+v1000   swipe feedback / ordinary touch POST bypass base
+v1003   open random scene-slot selection / crop behavior
+v1007   mobile main-composition scaling
+v1012   ordered global POST feedback base
+v1015   performance-diet layer
+v1020   irregular touch rupture / release behavior
+v1021   sparse GL
+v1022   ST dimming + resize resource disposal
+v1026   memory PRE-source composition lock
+v1027   memory canvas composite + POST + touch burst/lull
+v1028   text-only recall / full-frame readability field / fade
 ```
 
-Global POST common FX are ordered separately through configuration. Current startup behavior is summarized in `PROJECT_STATE.md` and actual parameters live in `config.js`.
+Older loaded modules are not automatically dead code. Verify `index.html` and inheritance before deleting or flattening them.
 
-Important current rule:
+### `P5Lab*` / `P5LAB_*` naming decision
 
-- ordinary touch rupture can bypass global POST as designed;
-- memory recall is an explicit exception: recalled image + readability field + typography are composited first and the current POST chain is then applied to the whole recall result.
-
-## 11. Crop architecture
-
-Each source draw can receive an independent adaptive crop.
-
-Cover-fit is calculated from source dimensions and target buffer aspect, then artistic zoom/pan uses available overflow and legal clamping. Deep crops are intentional.
-
-Current numeric crop range belongs in `config.js` / `PROJECT_STATE.md` rather than being repeated as an architectural constant.
-
-## 12. Touch interaction
-
-Mouse and one-finger touch normalize into downstream interaction state including:
+The implementation still uses inherited identifiers such as:
 
 ```text
-x
-y
+P5LabUtils
+P5LabInteraction
+P5LabMediaManager
+P5LAB_CONFIG
+P5LAB_VISUAL_ENGINE_CLASS
+...
+```
+
+These are not merely stale labels. They participate in active wiring:
+
+- base classes are extended by newer `Dodrei*` subclasses;
+- later modules overwrite global aliases to select the newest implementation;
+- common namespaces such as `P5LabUtils` are referenced across many loaded modules;
+- `index.html` depends on strict module order.
+
+A rename-only sweep would therefore touch a broad dependency surface while providing almost no runtime benefit.
+
+**Current policy:** retain compatibility identifiers. When the versioned chain becomes worth flattening into a clean baseline, perform naming cleanup as part of that dedicated architecture refactor and verify behavior before/after. Do not mix it into unrelated feature work.
+
+Old external repository paths, stale user-visible names or wrong canonical state are different: those are migration defects and should be fixed independently.
+
+## 8. Interaction
+
+Mouse and one-finger touch normalize into state such as:
+
+```text
+x / y
 pressure
 pressed
 swipeSpeed
@@ -278,199 +262,111 @@ releaseEnergy
 releaseAgeMs
 ```
 
-Touch currently affects playback speed before recall activation and drives visual rupture/swipe processing.
+Current touch behavior includes grayscale rupture, irregular slices, velocity-aware release, reduced-resolution mobile processing and stochastic burst/lull timing.
 
-### Touch rupture
+Exact thresholds, strengths and scales are tuning values in `config.js`.
 
-Current behavior includes:
-
-- grayscale high-contrast base;
-- irregular horizontal slice heights;
-- only a subset of slices displaced;
-- mostly small displacement with occasional extreme fractures;
-- velocity-aware release tail;
-- reduced-resolution mobile path with frame skipping;
-- stochastic burst/lull timing rather than a uniform high-rate refresh.
-
-### Swipe feedback
-
-Activation is conditional on pressed state and configured normalized swipe speed threshold.
-
-Exact threshold/strength/resolution values are tuning data and should be read from config/state.
-
-## 13. Memory recall architecture
-
-Memory recall is no longer a DOM visual overlay.
+## 9. Memory recall
 
 `js/memory-recall-v1028.js` owns:
 
-- pointer hold timer;
-- capture of the current archive key/entry;
-- retention of the resident `p5.Image` reference;
-- deterministic fragment lookup;
+- hold timer;
+- capture of current archive entry;
+- retention of resident image reference;
+- deterministic fragment selection;
 - memory id/text state;
 - activation timestamp;
 - release/cancel reset;
 - aria-live text mirroring.
 
-The active visual engine owns recall rendering.
-
-Current render path:
+The active visual engine owns visible recall rendering.
 
 ```text
 hold-start
-  -> capture current archive entry + resident image
+-> capture archive entry + resident image
 
-hold threshold reached
-  -> fixed memory source
-  -> stop ordinary scene/crop/PRE progression
-  -> clear obsolete temporal history
+activation
+-> fixed memory source
+-> stop normal scene/crop/PRE progression
+-> clear obsolete temporal history
 
 while held
-  -> touch rupture
-  -> optional swipe feedback
-  -> full-frame translucent readability field
-  -> MEMORY id + text
-  -> ordered POST common FX
-  -> vignette / waveform
+-> touch rupture
+-> optional swipe feedback
+-> full-frame readability field
+-> MEMORY id + fragment text
+-> ordered POST
+-> vignette / waveform
 
 release
-  -> clear recall state / temporal buffers
-  -> refresh ordinary composition
+-> clear recall/temporal state
+-> refresh ordinary composition
 ```
 
-The fixed recalled image is rendered as the underlying memory surface; the v1.0.27 thumbnail was removed in v1.0.28.
+The DOM memory node is accessibility-only.
 
-The DOM memory node is retained only for accessibility text mirroring.
+Exact under-finger/composited-layer resolution is not solved yet; this is a current limitation, not a reason to prebuild a generalized hit-testing system.
 
-### Current limitation
+If explicit linked memory records or persistent discovery are later adopted, content data should stay separate from the renderer. No schema is needed until that work actually begins.
 
-The captured archive entry follows `MediaManager.currentImageIndex`. In multi-image compositions this is not guaranteed to represent the exact visually dominant or under-finger layer. Exact composited-layer hit resolution remains unresolved.
+## 10. Audio / lifecycle / telemetry
 
-### Possible future content layer
+Audio uses native HTML playback plus a parallel Web Audio analysis/effect path. Current capabilities include PCM analysis, waveform, filtering, delay/feedback, distortion, subtle rate movement, touch-dependent wet control, mute and pause integration.
 
-If explicit memory records, links or persistent discovery state are actually adopted, content should remain separate from the visual renderer. This is a design direction only; there is no need to create a content schema before the work requires it.
+`mobile-visibility-v1024.js` pauses on mobile document hide and resumes only when that module itself caused the pause; user PAU state remains authoritative.
 
-## 14. Audio
+Telemetry is both instrumentation and artwork and is drawn after the processed visual surface.
 
-The stable audible path uses native HTML audio with a parallel Web Audio analysis/effect layer.
+DOM is reserved for relatively cheap UI/presentation tasks; large full-frame Canvas processing and media residency are the main performance concerns.
 
-The current stack includes:
-
-- PCM analysis window;
-- waveform;
-- filter control;
-- delay/feedback;
-- distortion;
-- subtle playback-rate movement;
-- touch-dependent wet amount;
-- independent runtime mute;
-- pause integration through `DODREI_SET_PAUSED`.
-
-Current soundtrack and actual parameters are asset/config state, not architecture constants.
-
-## 15. Mobile visibility lifecycle
-
-`js/mobile-visibility-v1024.js` handles mobile-only document visibility.
-
-```text
-hidden   -> DODREI_SET_PAUSED(true)
-visible  -> resume only if this module auto-paused it
-user PAU -> authoritative; do not auto-resume
-```
-
-Desktop is intentionally left unchanged.
-
-## 16. Telemetry and HTML UI
-
-Telemetry is both instrumentation and artwork and is rendered after processed visuals.
-
-HTML/DOM currently handles:
-
-- start screen;
-- runtime control buttons;
-- share/status UI;
-- accessibility mirror for memory text.
-
-Memory recall's visible dim/text is Canvas content, not DOM presentation.
-
-Simple DOM controls are comparatively cheap. Performance risk mainly comes from full-frame Canvas work, large media, large CSS effects, extra video or additional concurrent processing.
-
-## 17. Mobile performance strategy
-
-Retained principles:
+## 11. Performance principles
 
 - `pixelDensity(1)`;
 - bounded main composition dimensions;
-- reduced-resolution analysis;
 - bounded decoded image pool;
-- sequential background image decode;
-- reduced touch rupture/swipe buffers;
-- reduced global feedback/glitch auxiliary buffers;
-- mobile-heavy rupture frame skipping;
-- compatible Canvas filters batched where possible;
+- reduced-resolution analysis and auxiliary FX buffers;
+- sequential background decode;
+- mobile frame skipping for heavy rupture work;
+- batching compatible Canvas filters where possible;
 - no active halation/bloom pass;
-- explicit disposal/rebuild of graphics resources on viewport changes.
+- explicit resource disposal/rebuild on viewport changes.
 
-Exact current resolutions live in config/state.
+When performance regresses, reduce auxiliary resolution/work frequency before removing defining artistic behavior.
 
-## 18. Startup sequence
-
-The current sequence remains:
-
-```text
-0.0s   soundtrack begins immediately after accepted user gesture
-2.0s   title/start screen disappears
-2.0-3.0s black screen + music only
-3.0s   telemetry stage 1
-3.2s   telemetry stage 2
-3.4s   telemetry stage 3
-6.4s   main visual at 20% brightness
-7.4s   main visual at 100% brightness
-```
-
-Timing values originate in `config.js`; this section records the current presentation logic, not an immutable contract.
-
-## 19. Editing map
+## 12. Editing map
 
 | Goal | Primary source |
-|---|---|
-| tune current artwork | `config.js` |
-| edit config through UI | `control/` |
-| validation/editor metadata | `config-schema.js` |
-| image discovery/resident rotation | `js/media-manager.js` + media config |
-| visual algorithms / POST | active versioned visual-engine tail |
-| normalized touch release | `js/interaction-v1020.js` |
+| --- | --- |
+| current checkpoint / next | `PROJECT_STATE.md` |
+| exact runtime tuning | `config.js` |
+| config validation/editor metadata | `config-schema.js` |
+| static config editor | `control/` |
+| active module chain/cache key | `index.html` |
+| archive discovery/resident rotation | `js/media-manager.js` |
+| visual algorithms / POST | active visual-engine lineage |
+| touch release state | `js/interaction-v1020.js` |
 | memory hold/content state | `js/memory-recall-v1028.js` |
-| memory visual presentation | `js/visual-engine-v1026.js` → `v1028.js` |
-| mobile hide/show lifecycle | `js/mobile-visibility-v1024.js` |
-| audio | active audio modules |
-| telemetry | telemetry modules |
+| mobile visibility | `js/mobile-visibility-v1024.js` |
 | app frame/startup/pause/viewport | `sketch-v066.js` |
-| PAU/MUT/UI/FS controls | `js/runtime-utility-controls-v105.js` |
-| current script chain/cache key | `index.html` |
-| current checkpoint / unresolved work | `PROJECT_STATE.md` |
+| runtime controls | relevant UI/control modules |
 
-## 20. Compatibility and migration policy
+## 13. Documentation / continuation rule
 
-Do not equate old names with active project boundaries.
+The active web documentation is intentionally only:
 
-Retained identifiers such as `P5LAB_CONFIG`, `P5LabMediaManager` and older versioned modules may remain when changing them offers no functional benefit and would increase regression risk.
+```text
+PROJECT_STATE.md
+ARCHITECTURE.md
+```
 
-By contrast, old repository URLs, asset paths, user-visible project labels or documentation that can cause the current state to be reconstructed incorrectly are migration defects and should be corrected.
+For an ordinary new session:
 
-This distinction lets the project preserve working lineage without allowing obsolete external dependencies to survive unnoticed.
+```text
+root README
+-> web/PROJECT_STATE.md
+-> relevant config/code only as needed
+```
 
-## 21. Source-of-truth / continuation rule
+Read this architecture document when the task changes module responsibility, data flow, compatibility boundaries or large implementation structure.
 
-For a new session that needs repository state:
-
-1. begin at the repository root `README.md`;
-2. read root `PROJECT_STATE.md` to identify the active track;
-3. for web work, read `web/README.md` and `web/PROJECT_STATE.md`;
-4. verify `config.js` for actual defaults and runtime dependency paths;
-5. verify `index.html` for the active module chain/cache key;
-6. inspect only the relevant active modules;
-7. use this architecture document when structural responsibility matters.
-
-Do not reconstruct the current implementation from old version numbers, archive documents or stale conversation memory when the active repository can answer it directly.
+Do not recreate separate README/config/asset/handoff documents merely to categorize information. Split a new document only when one of these two files becomes genuinely insufficient for an independent responsibility.
