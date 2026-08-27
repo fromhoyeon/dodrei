@@ -1,8 +1,10 @@
 # DODREI Configuration Guide
 
-Current config schema: **1**  
-Current artwork/runtime: **1.0.24**  
-Current config revision: **37**
+Current config schema: **1**
+
+이 문서는 `config.js`의 **구조, 의미, 편집·호환 규칙**을 설명한다. 현재 release 번호, config revision, 개별 tuning 값처럼 자주 바뀌는 값은 이 문서의 source of truth가 아니다.
+
+현재 실제 값은 항상 `config.js`에서 확인하고, 작품의 현재 checkpoint와 의미 있는 변경은 `PROJECT_STATE.md`에서 확인한다.
 
 ## 1. Purpose
 
@@ -49,7 +51,7 @@ window.DODREI_CONFIG = {
 window.P5LAB_CONFIG = window.DODREI_CONFIG;
 ```
 
-`P5LAB_CONFIG` remains a compatibility alias for older modules.
+`P5LAB_CONFIG` remains a compatibility alias for older modules. It is an internal lineage/compatibility name, not the current project identity.
 
 ## 4. Version model
 
@@ -58,21 +60,26 @@ Keep these separate:
 ```text
 app.version
 ```
-Artwork/runtime release. This is also consumed by runtime presentation/telemetry and must be updated whenever the displayed release changes.
+
+Artwork/runtime release. This is consumed by runtime presentation/telemetry and should change when the displayed release meaningfully changes.
 
 ```text
 meta.schemaVersion
 ```
+
 Configuration contract version. Change only for meaningfully incompatible config-shape changes.
 
 ```text
 meta.configRevision
 ```
-Human revision for tuning/config snapshots.
 
-### Important v1.0.24 lesson
+Lightweight revision for config/tuning snapshots. It may change without an artwork/runtime version bump.
 
-`index.html` can display a new start-note while `config.js app.version` still contains an older release string. That happened during v1.0.24: Pages had the new code, but telemetry/runtime presentation still showed `1.0.23` because `app.version` had not been updated.
+`meta.configRevision` is deliberately **not duplicated into every README/state/architecture document**. Small numeric tuning should not create a documentation synchronization burden. If a tuning change alters the meaning or behavior of the artwork enough to matter at project level, record that change in `PROJECT_STATE.md`.
+
+### Historical v1.0.24 lesson
+
+During v1.0.24, `index.html` showed a new start-note while `config.js app.version` still contained the previous release string. Pages had the new code, but telemetry/runtime presentation therefore looked stale.
 
 Before declaring a deployment/version mismatch, verify both:
 
@@ -81,25 +88,22 @@ index.html start-note / cache key
 config.js app.version
 ```
 
-## 5. Current canonical defaults
+This historical lesson remains valid even though the current release has moved on.
+
+## 5. Current values and source of truth
+
+Do not copy the whole current config into this guide.
+
+For current work:
 
 ```text
-app.version                 1.0.24
-timing.compositionFps       30
-timing.visualSpeedLevel     S2
-timing.visualSpeedMultiplier 0.50
-visual.sourceCropMinZoom    1.0
-visual.sourceCropMaxZoom    8.0
-visual.swipeFeedbackThreshold 0.15
-visual.postCommonFx.masterEnabled true
-visual.postCommonFx.order   HC -> GS -> FB -> ST -> GL
+actual runtime values      -> config.js
+active module chain        -> index.html
+current artwork checkpoint -> PROJECT_STATE.md
+public compact summary     -> README.md
 ```
 
-Canonical share shape:
-
-```text
-?fps=30&speed=S2&post=1&fx=HC,GS,FB,ST,GL&mode=photo-double-blend&crop=10-80
-```
+A share URL may serialize a subset of current runtime choices, but it is not a substitute for `config.js` as the canonical default configuration.
 
 ## 6. Stable IDs
 
@@ -129,10 +133,10 @@ This applies to:
 
 DODREI CONTROL uses compatible partial merge.
 
-- **Compatible**: current path/ID exists and imported value validates -> use imported value.
-- **Missing**: current config has a value absent from imported file -> retain current-site value.
-- **Obsolete**: imported path/ID is unknown -> ignore.
-- **Invalid**: known path but wrong type/range/structure -> ignore.
+- **Compatible**: current path/ID exists and imported value validates → use imported value.
+- **Missing**: current config has a value absent from imported file → retain current-site value.
+- **Obsolete**: imported path/ID is unknown → ignore.
+- **Invalid**: known path but wrong type/range/structure → ignore.
 - **Added**: collections that explicitly allow new IDs may accept them; current example is `media.imageSets`.
 
 Preset and pipeline IDs are not open-ended because unknown effect/stage names do not create engine implementation.
@@ -172,80 +176,40 @@ Behavior belongs in modules; config selects supported behavior and supplies para
 
 ## 10. Mode playlist
 
-`visual.presets` is the current artwork mode playlist.
+`visual.presets` is the current artwork mode playlist. The exact active order and defaults should be read from `config.js` or `PROJECT_STATE.md` rather than copied here as permanent documentation.
 
-Current order:
+`visual.modeControl` determines sequencing, loop behavior, automatic/manual advance and start position.
 
-```text
-01 photo-double-blend
-02 photo-feedback-crop
-03 photo-rapid-crop
-04 photo-shard-swap
-05 photo-blend-cycle
-06 photo-full
-```
-
-Current mode control:
-
-```js
-modeControl: {
-  strategy: "sequence",
-  startIndex: 0,
-  loop: true,
-  autoAdvance: false,
-  manualButtonEnabled: true
-}
-```
-
-Automatic mode advance is currently OFF.
+Unknown preset IDs do not create new rendering code. New modes require implementation in the relevant engine/module first.
 
 ## 11. Visual pipeline
 
-Current stage IDs:
+The `visual.pipeline` collection describes supported stable stage IDs and whether those stages are enabled. The active runtime still owns the actual execution semantics and compatibility rules.
 
-```text
-preset-composition
-common-crush
-touch-rupture
-preset-feedback
-swipe-feedback
-vignette
-waveform
-```
+Do not add an unknown stage in config and expect it to execute.
 
-The stage representation is stable-ID based, but the active runtime still owns the actual ordering/compatibility rules. Do not add an unknown stage in config and expect it to execute.
-
-Global POST common FX are handled separately through `visual.postCommonFx` with ordered keys such as:
-
-```text
-BW GS LS BL FB GL ST CR HC DK VG
-```
-
-Current startup POST chain is:
-
-```text
-HC -> GS -> FB -> ST -> GL
-```
+Global POST common FX are handled separately through `visual.postCommonFx`, including an ordered list of supported effect keys. The exact current startup chain belongs in `config.js` and the current state document.
 
 ## 12. Touch-related parameters
 
-Current notable values:
+Touch behavior spans configuration and implementation.
 
-```text
-touchPlaybackSpeedMultiplier 0.50
-swipeFeedbackThreshold       0.15
-swipeFeedbackStrength        1.8
-swipeFeedbackAlphaMin        42
-swipeFeedbackAlphaMax        128
-```
+Config owns tunable values such as:
 
-The threshold was lowered from `0.25` in v1.0.24 so small drags can trigger feedback. The retain/strength damping from v1.0.23 remains to avoid long drags saturating into a near-non-decaying feedback loop.
+- touch playback multiplier;
+- swipe feedback threshold/strength/alpha;
+- touch rupture resolution scales;
+- rupture palette thresholds/colors.
 
-Touch rupture palette is grayscale only.
+Implementation owns timing/state behavior such as the burst/lull envelope and release logic unless those controls are explicitly promoted into config later.
 
-## 13. Image sets and residency
+Do not infer current numeric values from old version notes in this guide; read `config.js`.
 
-Current structure:
+## 13. Image sets, discovery and residency
+
+`media.imageSets` uses stable IDs and subdirectories relative to the configured image root.
+
+Example:
 
 ```js
 imageSets: [
@@ -253,39 +217,39 @@ imageSets: [
 ]
 ```
 
-Current archive/runtime values:
+Additional sets may be added as explicit subfolders when actual content requires them. Weighting, alternation or quota policy belongs in media selection, not visual-effect code.
+
+Two selection layers must remain conceptually separate:
 
 ```text
-archive files          96
-active decoded limit   20
-rotation batch         5
-rotation interval      5 s
-startup concurrency    3
-runtime rotation load  sequential
+archive -> resident working-set rotation
+  candidate policy: currently shuffle-bag based
+
+resident images -> visible scene selection
+  scene policy: independently configured; currently random with replacement
 ```
 
-Additional sets can be added as explicit subfolders and stable IDs. Future weighting/alternation/quotas belong in media-selection policy, not visual-effect code.
+### Repository migration rule
 
-Visible scene selection is independent random-with-replacement. The MediaManager shuffle bag is only for resident working-set rotation.
+Image auto-discovery uses GitHub's public Contents API. `media.githubOwner`, `media.githubRepo`, `media.githubBranch` and `media.githubImageDir` must point to the repository/path that actually contains the deployed asset archive.
+
+During the 2026-08-28 migration audit, these fields were found still pointing to the former `perfumeJaguar/perfumeJaguar.github.io/experiments/p5-media-lab/assets/images` location even though the implementation had moved to `fromhoyeon/dodrei/web/`. They were corrected to the current canonical repository.
+
+When moving the project again, treat these fields as **runtime dependencies**, not merely documentation strings.
 
 ## 14. Memory recall and narrative state
 
-The v1.0.24 memory-recall prototype is implemented in `js/memory-recall-v1024.js`, not in `config.js` yet.
+Memory recall behavior is primarily code-owned rather than a general config schema.
 
-Current behavior:
+The current implementation is split between the memory-recall module and the active visual-engine tail. `PROJECT_STATE.md` describes the current user-visible behavior and unresolved design questions.
 
-```text
-hold time             2000 ms
-mapping               archive key/index -> deterministic placeholder fragment
-placeholder fragments 24
-archive images        96
-```
+Future explicit narrative content should preferably move into a dedicated content structure/file rather than bloating `config.js` with story content. Config may expose supported timing/visual parameters, while memory text/link/state data should remain its own content layer if that system is actually adopted.
 
-Future explicit narrative content should preferably move into a dedicated data structure/file rather than bloating `config.js` with story content. Config can expose supported timing/visual parameters later, while memory text/link/state data should remain its own content layer.
+This is an architectural direction, not a requirement to create a future schema now.
 
 ## 15. Mobile visibility pause
 
-`js/mobile-visibility-v1024.js` handles mobile-only `visibilitychange` pause/resume. This behavior is code-owned, not currently configurable.
+The mobile `visibilitychange` pause/resume behavior is currently code-owned rather than configurable.
 
 It pauses only when the page becomes hidden and resumes only if the module itself caused the pause. User PAU state remains authoritative.
 
@@ -305,10 +269,11 @@ Normal workflow:
 3. Edit and review warnings
 4. Export config.js if using Control
 5. Replace config.js
-6. Commit
-7. Verify index.html start-note/cache key
-8. Verify config.js app.version
-9. Verify live runtime/telemetry
+6. Update app.version only if the artwork/runtime release changes
+7. Increment configRevision when useful for the config snapshot
+8. Refresh index.html cache key when deployed assets/config/modules changed
+9. Commit
+10. Verify live runtime/telemetry when deployment behavior matters
 ```
 
 The static browser control page has no repository write credentials.
@@ -321,13 +286,17 @@ Preferred sequence:
 1. Add runtime value to config.js.
 2. Make module code read that path.
 3. Add config-schema metadata if useful.
-4. Test Control import/export.
-5. Update README / PROJECT_STATE / architecture docs when behavior is user-visible or structural.
+4. Test Control import/export when relevant.
+5. Update PROJECT_STATE only if artwork behavior/decision materially changes.
+6. Update ARCHITECTURE only if structure/responsibility changes.
+7. Update this guide only if config semantics or editing rules change.
 ```
 
-## 19. Current limitations
+This prevents every small tuning edit from requiring synchronized prose changes across all documentation.
 
-The config/control system does not yet provide:
+## 19. Current known limitations of the config/control layer
+
+The config/control system does not currently provide a general solution for:
 
 - dependency rules between fields;
 - full semantic pair validation for every min/max relationship;
@@ -336,15 +305,18 @@ The config/control system does not yet provide:
 - general graph/node editing;
 - automatic plugin discovery;
 - a formal memory/narrative content schema;
-- arbitrary POST graph reordering beyond currently supported runtime behavior.
+- arbitrary POST graph behavior beyond what the active runtime implements.
 
-## 20. Source of truth
+These are limitations or possible future needs, not a roadmap that must be implemented.
 
-For continuation work:
+## 20. Continuation rule
 
-1. read `PROJECT_STATE.md`;
-2. verify `config.js`;
-3. verify `index.html` active script chain/cache key;
-4. inspect the active tail modules only as needed.
+For config-related continuation work:
+
+1. enter through the repository root `README.md` when repository state is needed;
+2. read `web/PROJECT_STATE.md` for the current checkpoint;
+3. verify `config.js` for actual values;
+4. verify `index.html` for active modules/cache key when deployment is relevant;
+5. inspect only the modules needed for the requested behavior.
 
 Do not reconstruct current defaults from old versioned module names or stale prose.
