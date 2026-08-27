@@ -1,306 +1,176 @@
-# PROJECT_STATE — DODREI
-
-Last updated: 2026-08-27  
-Current artwork/runtime version: `1.0.28`  
-Current visual engine version: `1.0.28`  
-Current config schema: `1`  
-Repository: `perfumeJaguar/perfumeJaguar.github.io`  
-Path: `experiments/p5-media-lab/`
-
-## Current baseline
-
-PHOTO ONLY. Automatic mode advance is OFF.
-
-```text
-BASE_FPS        30
-VIS_SPEED       S2 / 0.50x
-START_MODE      PHOTO_DOUBLE_BLEND / TWIN_EXPOSURE//NULL
-MODE_ORDER      DOUBLE_BLEND first
-CROP_MIN        1.0x
-CROP_MAX        8.0x
-POST            ON
-POST_CHAIN      HC -> GS -> FB -> ST -> GL
-POST_FB         ON
-POST_ST         ON
-POST_GL         ON
-TOUCH_PLAYBACK  0.50x before recall activation
-SWIPE_THRESHOLD 0.15
-RUPTURE_RES     mobile 0.62 / desktop 0.80
-SWIPE_FB_RES    mobile 0.60 / desktop 0.78
-FULLSCREEN      manual FS button inside runtime UI
-UI_DEFAULT      HIDDEN
-AUDIO           20220302 - sarabande.mp3
-IMAGE_ARCHIVE   96 files
-RESIDENT_POOL   20 decoded images
-MEMORY_HOLD     1000 ms
-MEMORY_TEXT     64 deterministic mixed fragments
-```
-
-Canonical visual defaults:
-
-```text
-?fps=30&speed=S2&post=1&fx=HC,GS,FB,ST,GL&mode=photo-double-blend&crop=10-80
-```
-
-## v1.0.28 — thumbnail rollback / full-frame dim / text fade / mixed fragments
-
-v1.0.28 keeps the v1.0.26 memory-source lock and v1.0.27 touch burst/lull + memory POST architecture, but simplifies recall presentation again.
-
-### Active memory pipeline
-
-```text
-pointer down
-  -> capture MediaManager current archive entry
-  -> retain resident p5.Image
-
-hold reaches 1000 ms
-  -> memory ACTIVE
-  -> fixed centered 1x cover memory source
-  -> normal preset image selection stops
-  -> random crop/layout stops
-  -> PRE common FX stops
-  -> preset feedback stops
-  -> composition virtual clock stops
-  -> old temporal buffers clear
+# PROJECT_STATE — Hoyeon Choi Portfolio
+
+Last updated: 2026-08-25
+Repository: `perfumeJaguar/perfumeJaguar.github.io`
+Live site: `https://perfumeJaguar.github.io/`
+Branch: `main`
+
+## Purpose
+
+Personal portfolio website for Hoyeon Choi, built as a static GitHub Pages site. The site is intended for media art, moving image, sound/performance, photography, and related portfolio material.
+
+The current phase is visual/prototyping work rather than final content production. GitHub is the source of truth for the implementation.
+
+## Design direction
+
+- Strongly minimal, editorial, artist-portfolio aesthetic.
+- Cargo sites are the main visual reference, especially the supplied `8886588.cargo.site` reference and `352785-a.cargo.site` gallery reference.
+- Mobile-first vertical scrolling is important.
+- Large typography, sparse information hierarchy, long vertical rhythm, restrained rules/borders, and simple media presentation.
+- Industrial / neutral typography is preferred over decorative styling.
+- Korean typography matters significantly; default Korean system fonts are not considered suitable for the desired design.
+- Layout should remain plain enough that images, video, text, and project documentation carry the visual weight.
 
-while held
-  -> touch rupture acts on fixed memory still
-  -> swipe feedback can act downstream
-  -> full-frame translucent black readability field is composited
-  -> MEMORY NNN + fragment are composited with fade-in
-  -> current POST COMMON FX is applied to the whole memory result
-  -> default POST chain: HC -> GS -> FB -> ST -> GL
+## Current baseline files
 
-release
-  -> recall inactive
-  -> temporal buffers clear
-  -> scene image slots reset
-  -> normal composition refreshes cleanly
-```
+### `index.html` + `style.css`
+Main Cargo-inspired portfolio prototype.
 
-### Thumbnail rollback
-
-The v1.0.27 original-aspect-ratio thumbnail was removed from the active renderer and from `index.html` markup. There is no visible thumbnail in recall.
-
-Reason: the thumbnail made the memory interaction too explanatory and constrained future recall layouts. The recall presentation now reserves the whole frame for future text/media without assuming a central image card.
-
-### Readability field
-
-The local black panel from v1.0.27 was replaced by a full-frame translucent black field.
-
-```text
-local text panel         REMOVED
-full-frame dim           black alpha ~106/255 before POST
-shade fade               ~260 ms smoothstep
-text/id fade             ~520 ms smoothstep, slightly delayed
-text shadow              retained
-```
+Current structure:
+- Sticky/simple top navigation: Hoyeon Choi / Information.
+- Oversized multi-line hero title.
+- Numbered project sections.
+- Large main-media placeholders.
+- Three-column thumbnail rows.
+- Project statement blocks.
+- Information section with Profile / Skills / Exhibitions / Awards / Press-style rows.
 
-This is not the old v1.0.25 opaque black plate: the fixed recalled image remains visible and touch effects continue underneath. The dim exists inside the p5 memory composite and therefore also participates in POST.
+This is still a structural placeholder rather than final portfolio content.
 
-### Text remains inside POST
+### `gallery.html` + `gallery.css`
+Alternative gallery/archive prototype inspired by the second Cargo reference.
 
-`MEMORY NNN` and the body fragment are drawn before POST. They therefore continue to receive the currently enabled POST chain, including feedback and glitch. Temporary loss of legibility during GL/FB events is currently accepted as part of the visual language.
+Current structure:
+- Continuous vertical archive.
+- Project index + title + metadata.
+- Large media blocks followed by small captions.
+- Mixed wide / portrait / square media rhythm.
+- Intended as a useful visual grammar for future image/video-heavy pages.
 
-### Fragment pool
+### `Font_test.html`
+Typeface specimen/archive for comparing Korean-friendly free web fonts in an actual portfolio-like layout.
 
-The old 24-fragment pool was strongly biased toward polished, vaguely melancholic memory sentences. v1.0.28 replaces it with a 64-entry deterministic pool designed to feel less narratively uniform.
+Currently compares 13 typefaces:
+1. IBM Plex Sans KR
+2. Wanted Sans
+3. Pretendard
+4. SUIT
+5. Gothic A1
+6. LINE Seed Sans KR
+7. NanumSquare Neo
+8. Gmarket Sans
+9. MaruBuri
+10. Black Han Sans
+11. Do Hyeon
+12. Jua
+13. Gowun Batang
+
+Tests include:
+- Very large Regular / Bold / Italic headings.
+- Korean sentence followed by equivalent English sentence.
+- Multi-line large typography specifically to inspect tight leading and glyph collisions.
+- Medium and subheading sizes.
+- Body Regular / Bold / Italic.
+- 12px / 11px / 10px two-line small-text tests.
+- 9px extreme-small reference.
+- Numerals, dates, technical metadata, and symbols.
+- Large Korean leading currently intentionally tight (`.82`) for stress testing.
+- Some Korean fonts have no true italic face, so browser synthetic italic may appear; this is a test characteristic, not a final design decision.
 
-Content types now include:
+### `Font_test-1.html`, `Font_test-2.html`, `Font_test-3.html`
+Theme entry pages that redirect to the same `Font_test.html` specimen with query parameters, so typography/content stays synchronized rather than being duplicated.
 
-- ordinary memory observations;
-- shopping/practical notes;
-- room/studio notes;
-- times and percentages;
-- number strings;
-- incomplete sentences and interrupted records;
-- neutral `IP:port` scraps using documentation-only or private address ranges;
-- personal shorthand that may be meaningful only to its original writer.
+- `Font_test-1.html` → white theme (`?theme=white`)
+- `Font_test-2.html` → neutral gray theme (`?theme=gray`)
+- `Font_test-3.html` → warm paper theme (`?theme=warm`)
 
-The intent is **not** overt mystery, horror, ARG signaling or an implied cipher. It should resemble unrelated scraps whose original context is absent.
+The warm paper palette is an experimental recommendation, not a final background choice. Final background should be judged with real portfolio imagery because image color/grain can change the result substantially.
 
-Archive mapping remains deterministic by archive key/index through the existing stable hash. With 96 images and 64 fragments, fragment reuse is still possible.
+### `Embed_test_1.html`
+First real-media embedding/layout experiment, derived from the gallery/archive direction.
 
-### Recall target limitation
+Current characteristics:
+- Mobile-first vertical editorial layout.
+- Wanted Sans chosen provisionally for the test.
+- Warm off-white background.
+- Still-image presentation mixed with YouTube embeds and captions.
+- Supplied YouTube video: `POEwTjr0eWY`.
+- YouTube embeds intentionally minimize visible player chrome using embed parameters such as `controls=0`, `rel=0`, `playsinline=1`, `fs=0`, with a small original-video link below.
+- The same video may be repeated in the prototype to test rhythm/scale.
+- One supplied photograph is currently embedded directly in the HTML as Base64 for the prototype.
 
-Recall still captures the MediaManager current archive entry at hold-start. In `PHOTO_DOUBLE_BLEND` and other multi-image modes, this is not guaranteed to be the exact visually dominant or under-finger composited layer. Exact layer/hit resolution remains unresolved.
+Important limitation: embedding image data directly in HTML is acceptable only for this quick experiment. Final portfolio media should be stored as separate optimized image assets (preferably an organized assets/images structure, using JPEG/WebP as appropriate) rather than Base64 inside HTML.
 
-## v1.0.27 — retained touch burst/lull + memory POST
+## Independent hosted experiments
 
-Retained behavior:
+### `experiments/p5-media-lab/`
+`p5 Media Lab 01` is an **independent media-art project**, not part of the portfolio design/runtime. It is currently hosted inside this repository only because GitHub Pages provides a convenient public deployment path.
 
-- memory overlay is p5 canvas content rather than a visible DOM layer;
-- recall explicitly applies POST after memory overlay composition even though ordinary touch rupture normally bypasses POST;
-- touch rupture pattern refresh alternates stochastic short bursts and longer lulls;
-- burst windows force fresh rupture patterns on allowed heavy passes;
-- lulls hold the previous fracture instead of reseeding continuously;
-- movement energy shortens lulls modestly but does not eliminate them;
-- touch raster scales were raised conservatively.
+Do not reconstruct or manage its detailed implementation from this portfolio state file. Its authoritative state is:
 
-Approximate rupture timing:
+`experiments/p5-media-lab/PROJECT_STATE.md`
 
-```text
-BURST   ~105-315 ms
-LULL    ~220-780 ms before gesture-energy shortening
-```
+That local state document records its p5.js/p5.sound architecture, current media manifest, mobile/fullscreen constraints, telemetry concept, debugging history, and possible future migration to the separate `perfumeJaguar/mediaArt` repository.
 
-Current quality/performance compromise:
+The experiment may remain here temporarily, but its visual language, dependencies, fullscreen behavior, interaction rules, and performance decisions must not be assumed to apply to the portfolio site itself.
 
-```text
-feedback/swipe mobile     0.60
-feedback/swipe desktop    0.78
-rupture mobile            0.62
-rupture desktop           0.80
-rupture frame skip mobile 2
-rupture frame skip desk   1
-```
+## Media supplied during prior checkpoint
 
-If mobile touch performance regresses, reduce these resolution scales before discarding burst timing.
+The user supplied three photographs for the embed/gallery experiment: portraits/documentation photographs at night around utility/electrical cabinets, with a recorder used as a visual/performance element. Three images were provided, but the current `Embed_test_1.html` prototype only directly incorporates one image. The remaining images should be considered available design references from that session, but are not yet persistent repository assets.
 
-## v1.0.26 — retained memory PRE-FX lock
+The supplied YouTube test URL was `https://youtu.be/POEwTjr0eWY`.
 
-v1.0.26 established the correct conceptual architecture: memory recall changes the actual visual source instead of covering a still-running random composition.
+## Typography direction / conclusions so far
 
-The captured resident `p5.Image` remains stable through resident-pool rotation for the duration of the hold. On release, ordinary scene slots and timing references are reset to avoid a large time jump.
+The purpose of the font work is not simply to find a fashionable Korean font. The desired font needs to work directly as web text, especially for a minimal/industrial artist portfolio, and preferably be freely distributable/useable as a webfont.
 
-## Earlier recall history
+The specimen intentionally includes both familiar long-running Korean web/design choices and newer alternatives. No single final font has been selected yet. Wanted Sans is currently used in `Embed_test_1.html` only as a provisional design choice.
 
-- `v1.0.24`: first 2-second text-only deterministic memory prototype; also mobile visibility and version-sync work.
-- `v1.0.25`: hold reduced to 1 second; raw thumbnail added on an opaque full-screen DOM plate. Superseded.
-- `v1.0.26`: real composition lock; transparent DOM thumbnail/text remained.
-- `v1.0.27`: thumbnail/text moved into p5 before POST; local dark panel; burst/lull rupture timing.
-- `v1.0.28`: thumbnail removed; full-frame dim + fading text retained before POST; fragment pool expanded and diversified.
+Typeface evaluation should prioritize:
+- Large headline character.
+- Korean/Latin compatibility.
+- Tight multi-line leading.
+- Small metadata/caption legibility.
+- Numerals and punctuation.
+- Weight behavior.
+- Whether synthetic italic looks acceptable when a native italic is unavailable.
 
-## Touch rupture
+## Architecture / implementation principles
 
-- Grayscale palette: black / dark gray / mid gray / near-white.
-- Irregular horizontal slice heights.
-- Mostly narrow slices, occasional broad fractures.
-- Only a subset of slices move.
-- Shift is usually small with occasional extreme displacement.
-- Release tail is short and velocity-aware.
-- Burst/lull timing avoids uniform metronomic glitching.
-- Mobile heavy pass still uses every-second-render-frame safeguard.
-- Swipe feedback threshold remains `0.15`.
-- During recall, touch effects operate on the fixed memory image.
+- Static HTML/CSS/JS hosted with GitHub Pages.
+- Keep the implementation simple; no framework is currently needed.
+- Mobile-first behavior is a primary requirement, not an afterthought.
+- Test pages may remain separate while visual decisions are being made.
+- Avoid prematurely consolidating experimental layouts into the production index.
+- Reuse shared content/logic where sensible. The font theme pages already demonstrate this by redirecting to one canonical specimen rather than duplicating a large HTML document.
+- For final media, use repository assets rather than Base64 HTML payloads.
+- Independent browser artworks may be hosted under `experiments/`, but each should keep its own project-state documentation if it develops beyond a simple portfolio-layout test.
 
-## Global POST FX
+## Reference sites
 
-Current ordered keys:
+- Cargo reference 1: `https://8886588.cargo.site/`
+  - Main reference for oversized typography, project numbering, long vertical composition, sparse metadata, and two-column information/CV sections.
+- Cargo reference 2: `https://352785-a.cargo.site/`
+  - Reference for the alternative gallery/archive-style continuous vertical media layout.
 
-```text
-BW GS LS BL FB GL ST CR HC DK VG
-```
+These are references for visual grammar and layout, not targets for literal copying.
 
-Startup chain:
+## Current open decisions
 
-```text
-HC -> GS -> FB -> ST -> GL
-```
+- Final primary typeface has not been chosen.
+- Final background palette has not been chosen: black/dark, white, neutral gray, and warm paper are still being compared.
+- Need to test the three supplied photographs as proper external assets rather than embedding one as Base64.
+- Need to decide whether the final site primarily follows the numbered editorial `index.html` structure, the continuous `gallery.html` structure, or a hybrid.
+- Need to replace placeholder project/CV content with actual portfolio material.
+- Need to decide final media optimization strategy and asset directory conventions before importing many images/videos.
+- YouTube's embed UI cannot be made completely custom/blank using ordinary embed parameters; the current prototype only minimizes available chrome. A different presentation strategy may be needed if stricter visual control becomes important.
 
-Roles:
-
-- `FB` — strong low-resolution temporal memory;
-- `GL` — sparse temporal slice glitch, more active with touch;
-- `ST` — film/projection luminance instability only;
-- `HC/GS/LS` — compatible Canvas filters batched where possible;
-- `BL` — reduced mobile scratch when enabled.
-
-Outside recall, ordinary touch rupture still bypasses POST. Recall is an intentional exception: full-frame dim and typography are composed first and then the current POST chain is applied.
-
-## Startup sequence
-
-```text
-0.0s   soundtrack begins immediately
-2.0s   title/start screen disappears
-2.0-3.0s black screen + music only
-3.0s   telemetry stage 1
-3.2s   telemetry stage 2
-3.4s   telemetry stage 3
-6.4s   main visual at 20% brightness
-7.4s   main visual at 100% brightness
-```
-
-## Scene / resident-pool policy
-
-Outside recall, visible scene draws use independent random selection with replacement:
-
-```text
-recent-image ban        NONE
-scene shuffle-bag       NONE
-duplicate suppression   NONE
-immediate repeat        ALLOWED
-same image in slots     ALLOWED
-```
-
-Resident working-set rotation remains separate:
-
-```text
-archive metadata        96 images
-active decoded pool     20
-rotation batch          5
-rotation interval       5 s
-candidate policy        shuffle-bag
-runtime decode          sequential
-```
-
-## Conceptual direction
-
-Current direction remains **recollection / fading memory**: fragments whose original significance is uncertain but whose emotional or material residue persists.
-
-Possible future layers remain open:
-
-- interactive web book / hypertext;
-- puzzle/game exploration;
-- visual-novel-like scenes;
-- hidden hotspots / hold / swipe / wait interactions;
-- non-linear memory nodes and persistent discovery state;
-- DODREI visual engine as the physics/surface of a memory world rather than a decorative background.
-
-Avoid making every scene a conventional discoverable-button puzzle. Long stretches may contain nothing explicit.
-
-Future explicit memory records should likely separate content from rendering:
-
-```text
-memory id
-image/archive key
-text / media payload
-unlock / discovery condition
-links to other memories
-persistent discovered state
-optional scene/FX parameters
-```
-
-## Important files
-
-- `config.js` — canonical defaults / runtime version `1.0.28` / configRevision `41`;
-- `index.html` — active script chain, start note and cache key `20260827-93`;
-- `js/visual-engine-v1028.js` — active text-only recall overlay / full-frame dim / text fade;
-- `js/visual-engine-v1027.js` — memory composite/POST base + burst/lull touch timing;
-- `js/visual-engine-v1026.js` — memory PRE-FX composition lock;
-- `js/visual-engine-v1022.js` — ST + resize disposal;
-- `js/visual-engine-v1021.js` — GL;
-- `js/visual-engine-v1020.js` — irregular touch rupture/release;
-- `js/visual-engine-v1015.js` — performance diet;
-- `js/visual-engine-v1012.js` — ordered global FB;
-- `js/visual-engine-v1000.js` — swipe feedback / ordinary touch POST bypass;
-- `js/interaction-v1020.js` — velocity-aware release;
-- `js/memory-recall-v1028.js` — 1-second archive capture / activation timestamp / 64 fragments;
-- `js/mobile-visibility-v1024.js` — mobile hidden/visible pause-resume;
-- `sketch-v066.js` — startup and orchestration;
-- `README.md` — public current-state summary.
-
-## Checkpoint — v1.0.28
-
-1. Canonical preset remains `30 FPS / S2 / HC -> GS -> FB -> ST -> GL / PHOTO_DOUBLE_BLEND / crop 1.0x..8.0x`.
-2. Runtime and visual engine are synchronized at `1.0.28`; config revision is `41`.
-3. Memory hold threshold remains `1000 ms`.
-4. Recall locks the PRE source to one captured image and stops ordinary random scene/crop/PRE/preset-feedback progression.
-5. Touch rupture and swipe continue on that fixed image.
-6. Thumbnail presentation is completely removed from the active canvas and HTML markup.
-7. Readability uses a full-frame translucent black field, not a local panel and not an opaque black plate.
-8. MEMORY id/body copy fade in over ~520 ms and remain before POST, so current POST FX can glitch/feedback the text.
-9. Fragment pool is now 64 mixed entries rather than 24 uniformly literary placeholders.
-10. Exact under-finger composited-layer detection remains unresolved.
-
-Deployment note: GitHub Pages deployment retriggered on 2026-08-27 after the previous v1.0.28 run was cancelled; no runtime code changed in this retrigger commit.
+## Next useful step
+
+Continue visual evaluation using `Embed_test_1.html` and the font/background specimens. Once typography, background, and basic media rhythm are chosen, establish an `assets/` structure and convert the strongest prototype into the actual portfolio baseline before importing substantial project content.
+
+Work on `p5 Media Lab 01` should continue from its own `experiments/p5-media-lab/PROJECT_STATE.md`, not from this portfolio roadmap.
+
+## Continuity rule
+
+For future portfolio sessions, read this file before reconstructing the project from conversation memory. Verify actual implementation details against the repository files. At meaningful checkpoints, update this document with confirmed decisions, current baseline files, experiments, limitations, unresolved items, and the next step.
