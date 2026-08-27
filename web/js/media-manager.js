@@ -1,5 +1,5 @@
 /**
- * P5 MEDIA LAB 01 — MEDIA MANAGER v0.7.0
+ * DODREI — MEDIA MANAGER
  *
  * Photo-only rolling working set.
  * - discovers the full archive as lightweight path metadata;
@@ -8,6 +8,9 @@
  * - swaps only after staging succeeds, then drops old references for GC;
  * - isolates candidate-selection policy so future multi-set mixing can evolve
  *   without coupling it to the visual engine.
+ *
+ * Internal P5Lab* identifiers are retained for compatibility with the inherited
+ * browser implementation; they do not indicate a separate LAB project.
  */
 class P5LabMediaManager {
   constructor(assets, config, telemetry) {
@@ -62,7 +65,8 @@ class P5LabMediaManager {
     const actionEl = document.querySelector(".start-action");
     const noteEl = document.querySelector(".start-note");
     if (actionEl) actionEl.textContent = action;
-    if (noteEl) noteEl.textContent = `v0.7.0 / ${note}`;
+    const appVersion = window.DODREI_CONFIG?.app?.version || window.P5LAB_CONFIG?.app?.version || "";
+    if (noteEl) noteEl.textContent = appVersion ? `v${appVersion} / ${note}` : note;
   }
 
   configuredImageSets() {
