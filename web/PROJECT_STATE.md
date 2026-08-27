@@ -1,11 +1,15 @@
-# PROJECT_STATE — DODREI
+# PROJECT_STATE — DODREI / Web
 
-Last updated: 2026-08-27  
+Last updated: 2026-08-28  
+Repository: `fromhoyeon/dodrei`  
+Path: `web/`  
 Current artwork/runtime version: `1.0.28`  
 Current visual engine version: `1.0.28`  
-Current config schema: `1`  
-Repository: `perfumeJaguar/perfumeJaguar.github.io`  
-Path: `experiments/p5-media-lab/`
+Current config schema: `1`
+
+이 문서는 DODREI의 **현재 브라우저 구현 checkpoint**를 복구하기 위한 canonical 상태 문서다.
+
+휘발성이 높은 개별 config revision이나 모든 숫자 값을 이 문서에 복제하지 않는다. 실제 runtime 값은 `config.js`, 현재 로드되는 module chain은 `index.html`, 구현 세부는 활성 코드가 source of truth다. 이 문서는 현재 작품 상태, 중요한 판단, 미해결 문제와 다음 작업을 기록한다.
 
 ## Current baseline
 
@@ -36,11 +40,42 @@ MEMORY_HOLD     1000 ms
 MEMORY_TEXT     64 deterministic mixed fragments
 ```
 
-Canonical visual defaults:
+Canonical visual share preset:
 
 ```text
 ?fps=30&speed=S2&post=1&fx=HC,GS,FB,ST,GL&mode=photo-double-blend&crop=10-80
 ```
+
+## Repository / deployment state
+
+브라우저 구현은 과거 `perfumeJaguar/perfumeJaguar.github.io/experiments/p5-media-lab/`에서 현재 DODREI 전용 repository의 `web/`으로 승격·이관되었다.
+
+현재 기준:
+
+```text
+repository              fromhoyeon/dodrei
+active browser path     web/
+Pages root              / -> ./web/
+image discovery source  fromhoyeon/dodrei / web/assets/images
+```
+
+2026-08-28 정합성 검토에서 이관 후에도 `config.js`의 image discovery가 이전 `perfumeJaguar` repository를 조회하고 있던 것을 발견해 현재 repository로 수정했다. 브라우저가 실제로 읽는 image path 자체는 계속 `./assets/images/...`이므로 작품 동작을 바꾸는 기능 변경이 아니라 canonical 저장소로 dependency를 복구한 것이다.
+
+`P5LAB_*`, `P5Lab*` 같은 내부 identifier와 일부 과거 module 이름은 현재 코드의 compatibility lineage로 남아 있다. 이것은 현재 프로젝트가 LAB이라는 뜻이 아니며, 이름만 정리하기 위한 대규모 refactor는 하지 않는다.
+
+## Current tuning after v1.0.28
+
+2026-08-28에 global POST `FB`를 조금 더 강하게 조정했다. runtime/visual engine version은 `1.0.28`을 유지하고 config tuning만 변경했다.
+
+현재 관련 값은 `config.js`가 canonical이며, checkpoint 시점의 핵심은 다음과 같다.
+
+```text
+POST FB retain alpha    128
+POST FB scale           0.989
+POST FB current alpha   236
+```
+
+이런 tuning 값은 앞으로 매번 이 문서에 복제하지 않는다. 작품 상태나 동작의 의미가 바뀌는 경우에만 이 문서를 갱신한다.
 
 ## v1.0.28 — thumbnail rollback / full-frame dim / text fade / mixed fragments
 
@@ -102,6 +137,8 @@ This is not the old v1.0.25 opaque black plate: the fixed recalled image remains
 
 `MEMORY NNN` and the body fragment are drawn before POST. They therefore continue to receive the currently enabled POST chain, including feedback and glitch. Temporary loss of legibility during GL/FB events is currently accepted as part of the visual language.
 
+The visible recall presentation is Canvas content. The DOM `#memory-recall` node remains only as an `aria-live` text mirror and is not a visual overlay.
+
 ### Fragment pool
 
 The old 24-fragment pool was strongly biased toward polished, vaguely melancholic memory sentences. v1.0.28 replaces it with a 64-entry deterministic pool designed to feel less narratively uniform.
@@ -159,7 +196,7 @@ If mobile touch performance regresses, reduce these resolution scales before dis
 
 ## v1.0.26 — retained memory PRE-FX lock
 
-v1.0.26 established the correct conceptual architecture: memory recall changes the actual visual source instead of covering a still-running random composition.
+v1.0.26 established the current conceptual architecture: memory recall changes the actual visual source instead of covering a still-running random composition.
 
 The captured resident `p5.Image` remains stable through resident-pool rotation for the duration of the hold. On release, ordinary scene slots and timing references are reset to avoid a large time jump.
 
@@ -248,7 +285,7 @@ runtime decode          sequential
 
 Current direction remains **recollection / fading memory**: fragments whose original significance is uncertain but whose emotional or material residue persists.
 
-Possible future layers remain open:
+The following are **open possibilities, not adopted implementation commitments**:
 
 - interactive web book / hypertext;
 - puzzle/game exploration;
@@ -259,7 +296,7 @@ Possible future layers remain open:
 
 Avoid making every scene a conventional discoverable-button puzzle. Long stretches may contain nothing explicit.
 
-Future explicit memory records should likely separate content from rendering:
+If explicit memory records are later adopted, content should likely remain separate from rendering. A possible data shape is:
 
 ```text
 memory id
@@ -271,36 +308,51 @@ persistent discovered state
 optional scene/FX parameters
 ```
 
-## Important files
+This remains a design possibility until actual work requires it.
 
-- `config.js` — canonical defaults / runtime version `1.0.28` / configRevision `41`;
-- `index.html` — active script chain, start note and cache key `20260827-93`;
-- `js/visual-engine-v1028.js` — active text-only recall overlay / full-frame dim / text fade;
+## Important active files
+
+- `config.js` — runtime configuration and actual current parameter values;
+- `index.html` — active script chain, cache key and visible runtime version;
+- `js/visual-engine-v1028.js` — active text-only recall presentation; full-frame readability field + text fade while preserving recall POST;
 - `js/visual-engine-v1027.js` — memory composite/POST base + burst/lull touch timing;
-- `js/visual-engine-v1026.js` — memory PRE-FX composition lock;
-- `js/visual-engine-v1022.js` — ST + resize disposal;
-- `js/visual-engine-v1021.js` — GL;
+- `js/visual-engine-v1026.js` — memory PRE-FX composition lock base;
+- `js/visual-engine-v1022.js` — ST dimming and resize resource disposal;
+- `js/visual-engine-v1021.js` — sparse GL;
 - `js/visual-engine-v1020.js` — irregular touch rupture/release;
-- `js/visual-engine-v1015.js` — performance diet;
+- `js/visual-engine-v1015.js` — performance-diet layer;
 - `js/visual-engine-v1012.js` — ordered global FB;
-- `js/visual-engine-v1000.js` — swipe feedback / ordinary touch POST bypass;
-- `js/interaction-v1020.js` — velocity-aware release;
-- `js/memory-recall-v1028.js` — 1-second archive capture / activation timestamp / 64 fragments;
-- `js/mobile-visibility-v1024.js` — mobile hidden/visible pause-resume;
-- `sketch-v066.js` — startup and orchestration;
-- `README.md` — public current-state summary.
+- `js/visual-engine-v1000.js` — swipe feedback and ordinary touch POST bypass;
+- `js/interaction-v1020.js` — velocity-aware release tail;
+- `js/memory-recall-v1028.js` — 1-second archive capture, activation timestamp and 64-fragment pool;
+- `js/mobile-visibility-v1024.js` — mobile background pause/resume;
+- `sketch-v066.js` — application orchestration.
 
-## Checkpoint — v1.0.28
+Older versioned modules remain because the active engine is built as an additive inheritance/module chain. Do not delete or rename them merely because newer files exist; verify `index.html` and inheritance before changing that structure.
 
-1. Canonical preset remains `30 FPS / S2 / HC -> GS -> FB -> ST -> GL / PHOTO_DOUBLE_BLEND / crop 1.0x..8.0x`.
-2. Runtime and visual engine are synchronized at `1.0.28`; config revision is `41`.
-3. Memory hold threshold remains `1000 ms`.
-4. Recall locks the PRE source to one captured image and stops ordinary random scene/crop/PRE/preset-feedback progression.
-5. Touch rupture and swipe continue on that fixed image.
-6. Thumbnail presentation is completely removed from the active canvas and HTML markup.
-7. Readability uses a full-frame translucent black field, not a local panel and not an opaque black plate.
-8. MEMORY id/body copy fade in over ~520 ms and remain before POST, so current POST FX can glitch/feedback the text.
-9. Fragment pool is now 64 mixed entries rather than 24 uniformly literary placeholders.
-10. Exact under-finger composited-layer detection remains unresolved.
+## Documentation roles
 
-Deployment note: GitHub Pages deployment retriggered on 2026-08-27 after the previous v1.0.28 run was cancelled; no runtime code changed in this retrigger commit.
+- `README.md` — web implementation entrypoint and compact current summary.
+- `PROJECT_STATE.md` — this document; current checkpoint, adopted decisions, limitations and next work.
+- `ARCHITECTURE.md` — current structural model and editing map. Update when architecture meaningfully changes.
+- `CONFIG_GUIDE.md` — stable config semantics, editing and migration rules. Current values remain in `config.js` rather than being copied there.
+- `ASSET_GUIDE.md` — asset handling and media-selection guidance.
+
+If prose and code disagree, verify the active code. Historical version notes explain how the current state developed but do not override current implementation.
+
+## Current unresolved / next
+
+1. Exact under-finger composited-layer detection for memory recall remains unresolved.
+2. Continue evaluating the current stronger global POST feedback artistically; treat further small numeric changes as config tuning unless behavior/architecture changes.
+3. Future explicit memory/content structure remains an open design question, not a committed schema.
+4. If architecture changes materially, update `ARCHITECTURE.md` together with this state rather than accumulating another handoff document.
+5. TouchDesigner, Max/MSP, external audio/local AI and other DODREI tracks are not normalized under `web/`; they should be added only when actual work begins and the root repository state is updated.
+
+## Checkpoint — 2026-08-28
+
+- Runtime and visual engine remain `1.0.28`.
+- Current repository/path is `fromhoyeon/dodrei` → `web/`.
+- Image discovery no longer depends on the previous `perfumeJaguar` repository.
+- Global POST feedback has been strengthened through config tuning without a runtime version bump.
+- Memory recall remains the v1.0.28 one-second fixed-source, text-only, pre-POST presentation described above.
+- Documentation roles have been normalized so volatile config values are not expected to be duplicated across every guide.
