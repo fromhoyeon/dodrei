@@ -1,44 +1,63 @@
 # DODREI
 
-DODREI의 실제 구상·설계·구현·상태 관리를 위한 작업 저장소다.
+DODREI의 실제 구상·설계·구현·상태 관리를 위한 canonical 작업 저장소다.
 
-이 저장소는 작품의 현재 구현과 채택된 구조를 장기적으로 보존하는 canonical 작업공간으로 사용한다. 개인적 기억과 삶의 기록, 작품 하나를 넘어서는 예술적·철학적 탐구는 별도의 개인 기록 체계에서 다루고, 이곳에는 실제 DODREI 작업에 필요한 결정과 상태만 남긴다.
+개인적 기억과 삶의 기록, 공개할 필요가 없는 작품의 개인적 기원과 내부 사유는 별도의 private 기록에서 다룬다. 이 저장소에는 실제 DODREI 작업에 필요한 구현, 채택된 결정과 공개 가능한 작업 정보만 둔다.
 
-## 진입점
+## 작업 진입점
 
-`README.md`는 이 저장소에서 고정하는 최초 진입점이다.
+이 `README.md`는 저장소의 유일한 고정 진입점이다.
 
-AI나 작업자가 현재 상태를 확인할 때는 다음 순서를 기본으로 한다.
+현재 활성 작업은 다음과 같다.
 
-1. 이 `README.md`
-2. [`PROJECT_STATE.md`](PROJECT_STATE.md) — DODREI 전체의 현재 작업 상태
-3. 실제 작업 대상의 하위 `README.md` / 상태 문서
-4. 필요한 architecture 문서와 실제 코드
-5. 작업 규칙이 필요하면 [`WORKING_GUIDE.md`](WORKING_GUIDE.md)
+| Track | Status | Current state | Structure |
+| --- | --- | --- | --- |
+| `web/` | active | [`web/PROJECT_STATE.md`](web/PROJECT_STATE.md) | [`web/ARCHITECTURE.md`](web/ARCHITECTURE.md) |
 
-현재 대화나 이미 확인된 정보만으로 충분하면 위 문서를 매번 전부 읽을 필요는 없다. 정확한 과거 상태가 필요한 범위만 확인한다.
+일반적인 web 작업에서는 **이 README를 읽은 뒤 바로 `web/PROJECT_STATE.md`로 이동한다.** 구조를 이해하거나 큰 수정이 필요할 때만 `web/ARCHITECTURE.md`를 추가로 읽는다.
 
-## 현재 구조
+루트 [`PROJECT_STATE.md`](PROJECT_STATE.md)는 여러 구현 track 사이의 공통 상태나 DODREI 전체 수준의 결정이 실제로 생겼을 때 사용하는 project-level state다. 현재는 web 하나만 활성화되어 있으므로 일반적인 web 작업에서 읽을 필요가 없다.
 
-- `web/` — 현재 활성 브라우저 기반 DODREI 구현체.
-- `archive/legacy-portfolio/` — 이 저장소가 DODREI 전용이 되기 전 사용하던 포트폴리오/Pages 실험 자료. 비활성 참고 자료이며 임의로 현재 DODREI 구조에 섞지 않는다.
-- `PROJECT_STATE.md` — DODREI 전체 수준의 현재 상태와 다음 작업을 기록한다.
-- `WORKING_GUIDE.md` — 이 저장소에서 AI와 함께 작업할 때 필요한 프로젝트 특수 규칙을 기록한다.
+정확한 parameter, 활성 module chain과 구현 세부는 문서에 복제하지 않고 실제 코드에서 확인한다.
 
-새 폴더나 문서 유형은 실제 필요가 생길 때만 추가한다. TouchDesigner, Max/MSP, audio, local AI 등 향후 작업도 자료의 실제 상태를 먼저 확인한 뒤 필요한 최소 구조만 만든다.
+```text
+runtime values       -> web/config.js
+active script chain  -> web/index.html
+web checkpoint       -> web/PROJECT_STATE.md
+web structure        -> web/ARCHITECTURE.md
+project-wide state   -> PROJECT_STATE.md (필요할 때만)
+```
 
-## Canonical 원칙
+## 문서 원칙
 
-- 전체 프로젝트의 현재 범위와 활성 작업은 루트 `PROJECT_STATE.md`에서 확인한다.
-- 개별 구현의 세부 상태는 해당 작업의 하위 상태 문서와 실제 코드가 우선한다.
-- 문서와 코드가 어긋나면 실제 구현을 확인해 문서를 갱신한다.
-- 개인적·비공개 맥락과 실제 구현 상태를 같은 문서에서 억지로 관리하지 않는다.
-- 과거 handoff나 archive는 참고 자료이며 현재 상태의 source of truth로 사용하지 않는다.
-- 대용량 원본 이미지·영상·오디오는 일반 Git 저장소에 무조건 넣지 않는다. 런타임에 실제 필요한 최적화 asset은 예외로 둘 수 있다.
+문서는 상태 복구와 안전한 작업에 실제로 필요한 만큼만 유지한다.
 
-## 현재 활성 작업
+- 같은 현재값을 여러 문서에 반복하지 않는다.
+- 작은 tuning과 파일 변경 이력은 config/code와 Git history에 맡긴다.
+- `PROJECT_STATE.md`는 현재 상태, 채택된 판단, 미해결 문제와 다음 작업을 기록한다.
+- `ARCHITECTURE.md`는 시스템 구조와 책임 경계, 수정할 때 확인해야 할 위치를 기록한다.
+- 별도 config guide, asset guide, working guide, handoff 등은 내용이 독립 문서를 필요로 할 만큼 커졌을 때만 만든다.
+- 새 구현 영역도 처음부터 같은 문서 세트를 강제하지 않는다. README에서 경로를 안내하고, 실제 복구 복잡성이 생긴 만큼만 state/architecture 문서를 둔다.
 
-브라우저 기반 DODREI의 현재 상세 상태는 다음에서 이어간다.
+## Repository 작업 원칙
 
-- [`web/README.md`](web/README.md)
-- [`web/PROJECT_STATE.md`](web/PROJECT_STATE.md)
+- repository 상태가 필요하면 항상 이 README부터 시작한다.
+- 현재 대화와 이미 확인한 최신 정보로 충분하면 repository를 반복 조회하지 않는다.
+- 필요한 작업 범위와 관련된 문서·코드만 확인한다.
+- 가능성을 탐색한 아이디어와 실제 채택된 결정을 구분한다.
+- 미래 가능성만을 위해 abstraction, 빈 폴더, placeholder module과 문서를 만들지 않는다.
+- 대용량 원본 미디어와 대량 생성물은 기본적으로 Git 밖에서 관리하고, 실제 runtime/reproduction에 필요한 최적화 asset만 repository에 둘 수 있다.
+- private context를 일반 구현 작업에서 자동으로 조회하거나 public 문서로 옮기지 않는다.
+- checkpoint에서는 실제로 바뀐 상태와 결정만 관련 canonical 문서에 반영한다.
+
+## 현재 구현의 유산 이름
+
+web 구현은 과거 p5 Media Lab에서 발전했기 때문에 `P5Lab*`, `P5LAB_*` 같은 내부 identifier와 versioned inheritance가 남아 있다.
+
+2026-08-28 검토 결과 이 이름들은 단순한 주석이 아니라 현재 로드 순서와 상속/전역 alias wiring에 광범위하게 연결되어 있다. 이름만 전면 치환하면 기능상 이득 없이 회귀 위험이 크므로 현재는 유지한다.
+
+이 이름을 정리해야 한다면 versioned inheritance를 현재 baseline으로 flatten하거나 module boundary를 재정립하는 **실제 architecture refactor와 함께** 수행한다. 반대로 이전 repository URL, 잘못된 asset path, 사용자에게 노출되는 옛 프로젝트명처럼 현재 동작이나 상태 복구를 잘못되게 만드는 잔재는 migration defect로 보고 즉시 수정한다.
+
+## 확장
+
+TouchDesigner, Max/MSP, audio, local AI 등 다른 DODREI 구현 영역이 실제로 repository에 들어오면 그때 필요한 최소 구조를 만든다. 둘 이상의 활성 track에 공통된 상태·결정이 생기기 전에는 루트 상태 문서를 불필요하게 비대하게 만들지 않는다.
