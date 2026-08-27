@@ -20,7 +20,7 @@ AI나 작업자가 현재 상태를 확인할 때는 다음 순서를 기본으�
 
 ## 현재 구조
 
-- `experiments/p5-media-lab/` — 현재 살아 있는 브라우저 기반 DODREI 작업. 과거 경로명을 연속성 때문에 당분간 유지한다.
+- `web/` — 현재 활성 브라우저 기반 DODREI 구현체.
 - `archive/legacy-portfolio/` — 이 저장소가 DODREI 전용이 되기 전 사용하던 포트폴리오/Pages 실험 자료. 비활성 참고 자료이며 임의로 현재 DODREI 구조에 섞지 않는다.
 - `PROJECT_STATE.md` — DODREI 전체 수준의 현재 상태와 다음 작업을 기록한다.
 - `WORKING_GUIDE.md` — 이 저장소에서 AI와 함께 작업할 때 필요한 프로젝트 특수 규칙을 기록한다.
@@ -33,13 +33,11 @@ AI나 작업자가 현재 상태를 확인할 때는 다음 순서를 기본으�
 - 개별 구현의 세부 상태는 해당 작업의 하위 상태 문서와 실제 코드가 우선한다.
 - 문서와 코드가 어긋나면 실제 구현을 확인해 문서를 갱신한다.
 - 과거 handoff나 archive는 참고 자료이며 현재 상태의 source of truth로 사용하지 않는다.
-- 대용량 원본 이미지·영상·오디오는 일반 Git 저장소에 무조건 넣지 않는다. 웹 런타임에 실제 필요한 최적화 asset은 예외로 둘 수 있다.
+- 대용량 원본 이미지·영상·오디오는 일반 Git 저장소에 무조건 넣지 않는다. 런타임에 실제 필요한 최적화 asset은 예외로 둘 수 있다.
 
 ## 현재 활성 작업
 
 브라우저 기반 DODREI의 현재 상세 상태는 다음에서 이어간다.
 
-- [`experiments/p5-media-lab/README.md`](experiments/p5-media-lab/README.md)
-- [`experiments/p5-media-lab/PROJECT_STATE.md`](experiments/p5-media-lab/PROJECT_STATE.md)
-
-현재 경로명은 역사적 이유로 남아 있으며, 구조를 보기 좋게 만들기 위한 목적만으로 즉시 이름을 바꾸지 않는다.
+- [`web/README.md`](web/README.md)
+- [`web/PROJECT_STATE.md`](web/PROJECT_STATE.md)
