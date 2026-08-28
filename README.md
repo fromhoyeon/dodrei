@@ -50,14 +50,6 @@ project-wide state   -> PROJECT_STATE.md (필요할 때만)
 - private context를 일반 구현 작업에서 자동으로 조회하거나 public 문서로 옮기지 않는다.
 - checkpoint에서는 실제로 바뀐 상태와 결정만 관련 canonical 문서에 반영한다.
 
-## 현재 구현의 유산 이름
-
-web 구현은 과거 p5 Media Lab에서 발전했기 때문에 `P5Lab*`, `P5LAB_*` 같은 내부 identifier와 versioned inheritance가 남아 있다.
-
-2026-08-28 검토 결과 이 이름들은 단순한 주석이 아니라 현재 로드 순서와 상속/전역 alias wiring에 광범위하게 연결되어 있다. 이름만 전면 치환하면 기능상 이득 없이 회귀 위험이 크므로 현재는 유지한다.
-
-이 이름을 정리해야 한다면 versioned inheritance를 현재 baseline으로 flatten하거나 module boundary를 재정립하는 **실제 architecture refactor와 함께** 수행한다. 반대로 이전 repository URL, 잘못된 asset path, 사용자에게 노출되는 옛 프로젝트명처럼 현재 동작이나 상태 복구를 잘못되게 만드는 잔재는 migration defect로 보고 즉시 수정한다.
-
 ## 확장
 
 TouchDesigner, Max/MSP, audio, local AI 등 다른 DODREI 구현 영역이 실제로 repository에 들어오면 그때 필요한 최소 구조를 만든다. 둘 이상의 활성 track에 공통된 상태·결정이 생기기 전에는 루트 상태 문서를 불필요하게 비대하게 만들지 않는다.
