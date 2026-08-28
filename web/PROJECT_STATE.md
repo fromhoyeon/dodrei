@@ -89,16 +89,6 @@ The repository root redirects to `./web/` for GitHub Pages.
 
 A 2026-08-28 migration audit found and corrected the previous runtime dependency on `perfumeJaguar/perfumeJaguar.github.io/experiments/p5-media-lab/assets/images`.
 
-## Legacy internal names / refactor decision
-
-The active code still contains `P5Lab*`, `P5LAB_*` identifiers and a long versioned visual-engine inheritance chain.
-
-A 2026-08-28 review confirmed these names participate in current global aliases, class inheritance and ordered module loading rather than existing only as stale labels. For example newer `Dodrei*` subclasses extend inherited `P5Lab*` classes and then replace the active global alias; `P5LabUtils` is used across multiple modules.
-
-**Decision:** do not perform a rename-only sweep now. It has broad regression surface and no meaningful runtime benefit.
-
-If these names are cleaned up, do it together with an architecture refactor that flattens the versioned inheritance/module lineage into a new current baseline, with the active behavior verified before and after. User-visible old names, obsolete repository paths and stale state documents are still treated as migration defects and should be removed independently.
-
 ## Open possibilities — not adopted commitments
 
 The following remain exploratory rather than fixed architecture:
@@ -117,7 +107,6 @@ Do not create schemas or modules for these until the artwork actually requires t
 2. Continue artistic evaluation of the stronger POST feedback; further small changes are config tuning unless they alter behavior meaningfully.
 3. Explicit memory/content structure remains an open design question.
 4. When structural work begins, use `ARCHITECTURE.md` rather than creating another handoff/state document.
-5. A future code-baseline refactor may flatten versioned modules and rename `P5Lab*` compatibility identifiers together, but only as a dedicated verified refactor.
 
 ## Continuation
 
