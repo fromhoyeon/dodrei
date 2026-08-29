@@ -12,9 +12,8 @@ Last updated: 2026-08-29
 - web implementation state: [`web/PROJECT_STATE.md`](web/PROJECT_STATE.md)
 - web architecture: [`web/ARCHITECTURE.md`](web/ARCHITECTURE.md)
 - TouchDesigner, Max/MSP, local AI 등 다른 구현 track은 아직 이 repository 안에서 canonical 구조를 갖지 않는다.
-- 현재 web runtime/state는 2026-08-28 checkpoint 이후 별도 구현 변경 없이 유지되고 있다.
 
-현재 DODREI 전체 수준에서 web state와 별도로 관리해야 할 공통 runtime state나 cross-track dependency는 없다.
+현재 DODREI 전체 수준에서 web state와 별도로 관리해야 할 공통 runtime state나 cross-track dependency는 없다. Web의 버전·checkpoint·next work는 이 문서에 복제하지 않고 `web/PROJECT_STATE.md`가 소유한다.
 
 ## Current artistic direction
 
