@@ -1,9 +1,9 @@
 # DODREI — Web Architecture
 
-현재 작품/실행 버전: **v1.0.28**  
+현재 작품/실행 버전: **v1.0.29**  
 현재 시각 엔진: **v1.0.28**  
 현재 설정 스키마(config schema): **1**  
-구조 검토일: **2026-08-28**
+구조 검토일: **2026-09-09**
 
 이 문서는 `web/` 구현의 **구조, 책임 경계, 안전하게 수정하기 위해 알아야 할 안정적인 운영 규칙**을 설명한다.
 
@@ -313,7 +313,9 @@ DOM memory node는 접근성 전용이다.
 
 Audio는 native HTML playback과 별도의 Web Audio analysis/effect path를 함께 사용한다. 현재 기능에는 PCM analysis, waveform, filtering, delay/feedback, distortion, 미세한 rate movement, touch-dependent wet control, mute, pause integration이 있다.
 
-`mobile-visibility-v1024.js`는 모바일에서 document가 숨겨지면 pause하고, 그 module 자신이 pause를 발생시킨 경우에만 resume한다. 사용자의 PAU state가 우선한다.
+Global Pause의 단일 진입점은 `DODREI_SET_PAUSED()`다. 현재 Pause는 p5 visual loop를 정지시키고, native audio playback을 실제로 pause하며, 활성 Web Audio FX context를 suspend한다. Resume은 같은 재생 위치에서 이어진다.
+
+`mobile-visibility-v1024.js`는 과거 파일명을 유지하지만 현재 책임은 기기별 mobile 예외가 아니라 runtime focus/visibility 감지다. `window blur`, `document.hidden`, `pagehide`가 발생하면 Global Pause를 호출하며 focus/visibility가 돌아와도 자동 Resume하지 않는다.
 
 Telemetry는 계측(instrumentation)이면서 작품 요소이기도 하며 처리된 visual surface 뒤에 그린다.
 
@@ -346,8 +348,8 @@ DOM은 비교적 저렴한 UI/presentation 작업에 사용한다. 전체 화면
 | visual algorithms / POST | 현재 visual-engine 계보 |
 | touch release state | `js/interaction-v1020.js` |
 | memory hold/content state | `js/memory-recall-v1028.js` |
-| mobile visibility | `js/mobile-visibility-v1024.js` |
-| app frame/startup/pause/viewport | `sketch-v066.js` |
+| runtime focus/visibility pause | `js/mobile-visibility-v1024.js` |
+| app frame/startup/global pause/viewport | `sketch-v066.js` |
 | runtime controls | 관련 UI/control module |
 
 ## 13. 문서와 작업 이어가기 규칙
