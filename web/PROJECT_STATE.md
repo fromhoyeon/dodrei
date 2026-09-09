@@ -1,9 +1,9 @@
 # PROJECT_STATE — DODREI / Web
 
-마지막 갱신: 2026-08-28  
+마지막 갱신: 2026-09-09  
 저장소: `fromhoyeon/dodrei`  
 경로: `web/`  
-작품/실행 버전: `1.0.28`  
+작품/실행 버전: `1.0.29`  
 시각 엔진: `1.0.28`  
 설정 스키마(config schema): `1`
 
@@ -30,6 +30,18 @@
 ```
 
 정확한 현재 숫자 값은 `config.js`를 기준으로 한다.
+
+## Global Pause — 현재 채택된 동작
+
+`DODREI_SET_PAUSED()`를 DODREI 전체의 단일 pause 진입점으로 사용한다.
+
+- 사용자 PAU 버튼과 내부/외부 자동화는 같은 Global Pause 상태를 사용한다.
+- Pause는 p5 visual loop를 정지하고 native soundtrack playback을 실제로 멈추며 Web Audio FX context도 suspend한다.
+- Resume은 같은 재생 위치에서 다시 이어진다.
+- 기기 종류를 구분하지 않고 browser window가 focus를 잃거나 document가 hidden/pagehide 상태가 되면 자동으로 Pause한다.
+- focus나 visibility가 돌아와도 자동 Resume하지 않는다. 사용자가 직접 Resume해야 한다.
+- 향후 다른 기능이 늘어나더라도 시간에 따라 진행되는 기능은 이 Global Pause에 종속시키는 방향을 유지한다.
+- 외부 페이지에서 Pause를 호출하는 기능은 가능하지만 현재 포트폴리오와의 외부 호출 연결은 아직 구현하지 않았다.
 
 ## Memory recall — 현재 채택된 동작
 
@@ -73,7 +85,7 @@ Recall 대상은 hold 시작 시점에 확보한 MediaManager의 현재 archive 
 - 작은 drag도 동작할 수 있도록 낮춘 swipe feedback threshold
 - 일반 touch rupture는 global POST를 우회할 수 있음
 - recall은 의도적인 예외로, recall image + dim + typography에 POST를 함께 적용
-- v1.0.28 이후 작품/실행 버전은 바꾸지 않고 config tuning으로 global feedback을 강화함
+- v1.0.28 이후 config tuning으로 강화한 global feedback을 현재 기준으로 유지함
 
 ## 저장소 / 배포 상태
 
@@ -105,8 +117,9 @@ fromhoyeon/dodrei
 
 1. memory recall에서 **실제로 손가락 아래 있거나 합성에 사용된 layer를 정확히 판별하는 방법**이 아직 해결되지 않았다.
 2. 강화된 POST feedback의 작품적 결과를 계속 평가한다. 동작의 성격을 바꾸지 않는 작은 변경은 config tuning으로 처리한다.
-3. 명시적인 memory/content 구조를 만들지는 아직 열린 설계 문제다.
-4. 구조 작업을 시작할 때는 새로운 handoff/state 문서를 만들지 말고 `ARCHITECTURE.md`를 사용한다.
+3. 포트폴리오 embed가 viewport 밖으로 완전히 벗어났을 때 외부에서 DODREI Global Pause를 호출하는 연결은 아직 구현하지 않았다.
+4. 명시적인 memory/content 구조를 만들지는 아직 열린 설계 문제다.
+5. 구조 작업을 시작할 때는 새로운 handoff/state 문서를 만들지 말고 `ARCHITECTURE.md`를 사용한다.
 
 ## 작업 이어가기
 
