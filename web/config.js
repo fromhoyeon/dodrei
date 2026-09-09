@@ -1,6 +1,6 @@
 /** DODREI — RUNTIME CONFIGURATION */
 window.DODREI_CONFIG={
-meta:{project:"DODREI",schemaVersion:1,configRevision:44,generatedBy:"hand-or-control"},
+meta:{project:"DODREI",schemaVersion:1,configRevision:45,generatedBy:"hand-or-control"},
 app:{title:"DODREI",version:"1.0.29",targetFps:60,requestFullscreenOnStart:false,preventContextMenu:true,modeDurationSec:11,imageSwitchSec:.10,startScreenHoldMs:2000,telemetryStartDelayMs:3000,telemetryStaggerMs:200,visualDimDelayAfterTelemetryMs:3000,visualFullDelayAfterDimMs:1000},
 timing:{compositionFps:30,visualSpeedLevel:"S2",visualSpeedMultiplier:.50,visualStateIntervalMs:45,cutSpeedLevel:"S2",cutIntervalMs:240,timeReferenceFps:60,maxDeltaMs:100},
 render:{pixelDensity:1,background:0,maxBufferLongEdgeMobile:720,maxBufferLongEdgeDesktop:1280,mobileMainOversample:2,analysisWidthMobile:128,analysisWidthDesktop:180,analysisEveryNFrames:2,analysisPixelStep:2},
