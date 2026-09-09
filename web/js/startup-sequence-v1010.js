@@ -6,6 +6,23 @@
     startScreenReleased: false,
   };
 
+  const applyBuildLabel = () => {
+    const note = document.querySelector('.start-note');
+    const config = window.DODREI_CONFIG || window.P5LAB_CONFIG;
+    if (!note || !config) return;
+    const version = String(config.app?.version || '').trim();
+    const revision = config.meta?.configRevision;
+    if (!version) return;
+    const hasRevision = revision !== undefined && revision !== null && String(revision).trim() !== '';
+    note.textContent = `DODREI v${version}${hasRevision ? ` / revision ${revision}` : ''}`;
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyBuildLabel, { once: true });
+  } else {
+    applyBuildLabel();
+  }
+
   const Telemetry = window.P5LabTelemetry;
   if (Telemetry && Telemetry.prototype.render) {
     const baseRender = Telemetry.prototype.render;
