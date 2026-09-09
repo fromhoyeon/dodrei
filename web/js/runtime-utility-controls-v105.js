@@ -1,20 +1,30 @@
-/** DODREI — PAUSE / MUTE / UI-HIDE / FULLSCREEN UTILITY CONTROLS */
+/** DODREI — PAUSE / UI-HIDE / FULLSCREEN UTILITY CONTROLS */
 window.addEventListener("DOMContentLoaded", () => {
   const pauseButton = document.getElementById("runtime-pause-button");
-  const muteButton = document.getElementById("runtime-mute-button");
   const uiButton = document.getElementById("runtime-ui-button");
   const fullscreenButton = document.getElementById("runtime-fullscreen-button");
   const stopPointer = (event) => event.stopPropagation();
   const setPressed = (button, pressed, label, title) => { if (!button) return; button.setAttribute("aria-pressed", pressed ? "true" : "false"); button.setAttribute("aria-label", label); button.title = title; };
 
   if (pauseButton) {
-    const refreshPause = () => { const paused=!!window.DODREI_RUNTIME_PAUSED; pauseButton.textContent="PAU"; setPressed(pauseButton,paused,paused?"Resume visual playback":"Pause visual playback",paused?"Resume visual playback":"Pause visual playback"); };
-    pauseButton.addEventListener("pointerdown",stopPointer);pauseButton.addEventListener("click",(event)=>{event.preventDefault();event.stopPropagation();const next=!window.DODREI_RUNTIME_PAUSED;if(typeof window.DODREI_SET_PAUSED==="function")window.DODREI_SET_PAUSED(next);refreshPause();});refreshPause();
+    const refreshPause = () => {
+      const paused = !!window.DODREI_RUNTIME_PAUSED;
+      pauseButton.textContent = paused ? "RESUME" : "PAUSE";
+      setPressed(pauseButton, paused, paused ? "Resume DODREI" : "Pause DODREI", paused ? "Resume DODREI" : "Pause DODREI");
+    };
+    pauseButton.addEventListener("pointerdown", stopPointer);
+    pauseButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const next = !window.DODREI_RUNTIME_PAUSED;
+      if (typeof window.DODREI_SET_PAUSED === "function") window.DODREI_SET_PAUSED(next);
+      else window.DODREI_RUNTIME_PAUSED = next;
+      refreshPause();
+    });
+    window.addEventListener("dodrei:pausechange", refreshPause);
+    refreshPause();
   }
-  if (muteButton) {
-    const refreshMute=()=>{const engine=window.DODREI_AUDIO_ENGINE;const muted=engine&&typeof engine.isMuted==="function"?engine.isMuted():!!window.DODREI_RUNTIME_MUTED;muteButton.textContent="MUT";setPressed(muteButton,muted,muted?"Unmute audio":"Mute audio",muted?"Unmute audio":"Mute audio");};
-    muteButton.addEventListener("pointerdown",stopPointer);muteButton.addEventListener("click",(event)=>{event.preventDefault();event.stopPropagation();const engine=window.DODREI_AUDIO_ENGINE;const current=engine&&typeof engine.isMuted==="function"?engine.isMuted():!!window.DODREI_RUNTIME_MUTED;const next=!current;window.DODREI_RUNTIME_MUTED=next;if(engine&&typeof engine.setMuted==="function")engine.setMuted(next);refreshMute();});refreshMute();
-  }
+
   if (uiButton) {
     const refreshUi=()=>{const hidden=document.body.classList.contains("dodrei-ui-hidden");uiButton.textContent="UI";setPressed(uiButton,hidden,hidden?"Show runtime controls":"Hide runtime controls",hidden?"Show runtime controls":"Hide runtime controls");};
     uiButton.addEventListener("pointerdown",stopPointer);uiButton.addEventListener("click",(event)=>{event.preventDefault();event.stopPropagation();document.body.classList.toggle("dodrei-ui-hidden");refreshUi();});refreshUi();
