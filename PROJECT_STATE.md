@@ -1,19 +1,37 @@
 # PROJECT_STATE — DODREI
 
-마지막 갱신: 2026-08-29
+마지막 갱신: 2026-09-22
 
 이 문서는 DODREI **전체 수준의 상태가 실제로 필요할 때만** 사용하는 프로젝트 전체 상태 문서다.
 
-현재 활성 구현 영역은 `web/` 하나뿐이다. 따라서 일반적인 웹 작업에서는 이 문서를 읽지 않고 루트 `README.md`에서 바로 [`web/PROJECT_STATE.md`](web/PROJECT_STATE.md)로 이동한다.
+현재 저장소 안에서 기준(canonical) 구현 상태를 가진 영역은 `web/` 하나뿐이다. 웹의 구현 세부를 확인할 때는 루트 `README.md`에서 바로 [`web/PROJECT_STATE.md`](web/PROJECT_STATE.md)로 이동한다.
 
 ## 현재 프로젝트 전체 상태
 
-- 활성 구현 영역: `web/`
+- 기준 구현 영역: `web/`
 - 웹 구현 상태: [`web/PROJECT_STATE.md`](web/PROJECT_STATE.md)
 - 웹 구조: [`web/ARCHITECTURE.md`](web/ARCHITECTURE.md)
+- 현재 p5.js 웹 구현은 가능성 테스트와 기술 검증 단계의 결과물로 보존한다.
 - TouchDesigner, Max/MSP, local AI 등 다른 구현 영역은 아직 이 저장소 안에서 기준(canonical) 구조를 갖지 않는다.
 
-현재 DODREI 전체 수준에서 웹 상태와 별도로 관리해야 할 공통 실행 상태(runtime state)나 구현 영역 간 의존성(cross-track dependency)은 없다. 웹의 버전·현재 상태·다음 작업은 이 문서에 복제하지 않고 `web/PROJECT_STATE.md`가 소유한다.
+현재 DODREI 전체 수준에서 웹 상태와 별도로 관리해야 할 공통 실행 상태(runtime state)나 구현 영역 간 의존성(cross-track dependency)은 없다. 웹의 버전·구체적 구현 상태는 이 문서에 복제하지 않고 `web/PROJECT_STATE.md`가 소유한다.
+
+## 현재 상위 방향 — 2026-09-22
+
+지금까지의 p5.js 구현은 DODREI의 아이디어 일부를 웹 환경에서 구현할 수 있는지 확인하고, Dual Observation과 유사한 구조를 어느 정도 옮길 수 있는지 기술적으로 검증하는 역할을 충분히 수행했다.
+
+따라서 당분간 현재 웹 버전을 계속 세분화하거나 성능 최적화·세부 기능 추가를 이어가는 것은 우선순위가 아니다.
+
+현재 버전은 하나의 **보존된 결과물 및 역사적 baseline**으로 취급한다.
+
+- 필요하면 이후 소폭 정리해 독립적인 작품 형태로 선보일 수 있다.
+- 여기서 검증한 기능과 구현 경험은 이후 다른 작품이나 새로운 DODREI 구현에 재사용할 수 있다.
+- 현재 구현의 세부 상태와 기술적 판단은 `web/PROJECT_STATE.md`, 실제 코드와 Git history에 그대로 보존한다.
+- 이 단계 전환을 이유로 기존 구현을 재구성하거나 정리하지 않는다.
+
+다음 단계의 핵심은 현 구현을 연장하는 것이 아니라, 다시 큰 그림으로 돌아가 **DODREI의 작품 개념과 전체 구조를 더 넓게 재설계하는 것**이다.
+
+이 방향 전환 자체가 새 architecture나 구현 계획을 이미 채택했다는 뜻은 아니다. 현재 시점에는 새로운 구현을 시작하지 않으며, 개념과 전체 구조에 대한 탐색과 설계를 먼저 진행한다.
 
 ## 현재 작품 방향
 
